@@ -1,0 +1,36 @@
+name: K6 Load Test
+
+on:
+  push:
+    branches: [ main, PROD ]
+  workflow_dispatch:
+
+jobs:
+  k6-load-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install k6 (official repo)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Run K6 Load Test in Cloud
+        env:
+          K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER: ${{ secrets.USER }}
+          PASS: ${{ secrets.PASS }}
+        run: |
+          k6 cloud tests/load/k6-colibri.js \
+            -e BASE_URL="${BASE_URL}" \
+            -e USER="${USER}" \
+            -e PASS="${PASS}"
