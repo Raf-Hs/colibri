@@ -1,18 +1,19 @@
-name: K6 Load Test Diego
+name: k6 Load Test
 
 on:
-  push:
-    branches: [ main, development ]
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - development
 
 jobs:
-  k6-load-test:
+  load-test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 🟢 PASO 1: INSTALACIÓN MANUAL DE K6
       - name: Install k6 (official repo)
         run: |
           sudo apt-get update
@@ -23,14 +24,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y k6
 
-      - name: Run K6 Load Test in Cloud
+      # 🟢 PASO 2: EJECUCIÓN DEL SCRIPT
+      - name: Run k6 load test
+        # Usamos 'run:' para ejecutar el CLI de k6, ya instalado en el paso anterior.
+        run: k6 run test/load-test.js --out cloud
+        
+        # Las variables de entorno se siguen pasando en la sección 'env:'
         env:
+          # Token de Grafana Cloud para la salida.
           K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }}
-          BASE_URL: ${{ secrets.BASE_URL }}
-          USER: ${{ secrets.USER }}
-          PASS: ${{ secrets.PASS }}
-        run: |          
-          k6 cloud test/load-test.js \
-            -e BASE_URL="${BASE_URL}" \
-            -e USER="${USER}" \
-            -e PASS="${PASS}"
+          # (Opcional) Variables de entorno para credenciales, si las implementaste:
+          # K6_ENV_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          # K6_ENV_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
