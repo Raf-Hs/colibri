@@ -12,9 +12,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 🟢 CORRECCIÓN DE VERSIÓN: Usamos v0.4.0 para el instalador/ejecutor
+    # 🟢 CORRECCIÓN FINAL: Usamos el tag 'v0' para obtener la última versión estable.
     - name: Run k6 load test
-      uses: grafana/k6-action@v0.4.0 
+      uses: grafana/k6-action@v0
       with:
         # La ruta de tu script:
         script: test/load-test.js
@@ -22,3 +22,6 @@ jobs:
       env:
         # El token de Cloud:
         K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }}
+        # Si implementaste la seguridad:
+        K6_ENV_EMAIL: ${{ secrets.USER }}
+        K6_ENV_PASSWORD: ${{ secrets.PASS }}
