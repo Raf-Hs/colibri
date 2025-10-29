@@ -1,0 +1,22 @@
+name: k6 Load Test
+
+on:
+  pull_request:
+    branches:
+      - main
+      - development
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run k6 load test
+      uses: grafana/run-k6-action@v0.2.0
+      with:
+        # 🟢 RUTA CORREGIDA: Apunta a la ubicación real de tu script.
+        script: test/load-test.js 
+        cloud: true # Para subir los resultados a Grafana Cloud
+      env:
+        K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }} # Token de Grafana Cloud
