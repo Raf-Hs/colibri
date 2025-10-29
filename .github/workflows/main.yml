@@ -25,14 +25,8 @@ jobs:
           sudo apt-get install -y k6
 
       # 🟢 PASO 2: EJECUCIÓN DEL SCRIPT
-      - name: Run k6 load test
-        # Usamos 'run:' para ejecutar el CLI de k6, ya instalado en el paso anterior.
-        run: k6 run test/load-test.js --out cloud
-        
-        # Las variables de entorno se siguen pasando en la sección 'env:'
+      - name: Run k6 load test (Cloud via ENV)
+        # 🟢 Mejor práctica: Dejar que el token en ENV active la salida a cloud
+        run: k6 run test/load-test.js 
         env:
-          # Token de Grafana Cloud para la salida.
           K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }}
-          # (Opcional) Variables de entorno para credenciales, si las implementaste:
-          # K6_ENV_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          # K6_ENV_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
