@@ -30,6 +30,7 @@ jobs:
           USER: ${{ secrets.USER }}
           PASS: ${{ secrets.PASS }}
         run: |
+          cd colibri-backend
           k6 cloud tests/load/k6-colibri.js \
             -e BASE_URL="${BASE_URL}" \
             -e USER="${USER}" \
