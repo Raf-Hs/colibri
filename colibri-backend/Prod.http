@@ -30,7 +30,7 @@ Authorization: Bearer {{token}}
 GET {{baseUrl}}/auth/users
 
 k6 cloud tests/load/k6-colibri.js \
-  -e BASE_URL=https://colibri-backend.onrender.com \
+  -e BASE_URL=https://colibri-backend-od5b.onrender.com \
   -e USER=test@colibri.com \
   -e PASS=1234 \
-  -e K6_CLOUD_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  -e K6_CLOUD_TOKEN="2e5951552a7e52220acd27fa22239cb20f046f7661e8d2cb731fad3156f9daf2"
