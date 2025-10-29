@@ -1,27 +1,37 @@
-name: k6 Load Test
+name: K6 Load Test Diego
 
 on:
-  pull_request:
-    branches:
-      - main
-      - development
+  push:
+    branches: [ main, development ]
+  workflow_dispatch:
 
 jobs:
-  load-test:
+  k6-load-test:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    # 🟢 CORRECCIÓN FINAL: Usamos el tag 'v0' para obtener la última versión estable.
-    - name: Run k6 load test
-      uses: grafana/k6-action@v0
-      with:
-        # La ruta de tu script:
-        script: test/load-test.js
+      - name: Install k6 (official repo)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
 
-      env:
-        # El token de Cloud:
-        K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }}
-        # Si implementaste la seguridad:
-        K6_ENV_EMAIL: ${{ secrets.USER }}
-        K6_ENV_PASSWORD: ${{ secrets.PASS }}
+      - name: Run K6 Load Test in Cloud
+        env:
+          K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER: ${{ secrets.USER }}
+          PASS: ${{ secrets.PASS }}
+        run: |
+          cd colibri-backend
+          k6 cloud test/load-test.js \
+            -e BASE_URL="${BASE_URL}" \
+            -e USER="${USER}" \
+            -e PASS="${PASS}"
