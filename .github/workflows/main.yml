@@ -29,8 +29,7 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
           USER: ${{ secrets.USER }}
           PASS: ${{ secrets.PASS }}
-        run: |
-          
+        run: |          
           k6 cloud test/load-test.js \
             -e BASE_URL="${BASE_URL}" \
             -e USER="${USER}" \
