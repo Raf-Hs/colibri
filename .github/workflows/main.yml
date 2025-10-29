@@ -13,10 +13,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Run k6 load test
-      uses: grafana/run-k6-action@v1.2.0
-      with:
-        # 🟢 RUTA CORREGIDA: Apunta a la ubicación real de tu script.
-        script: test/load-test.js 
-        cloud: true # Para subir los resultados a Grafana Cloud
+      uses: grafana/run-k6-action@v1.2.0 
+      with:        
+        path: colibri/test/load-test.js 
+
       env:
-        K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }} # Token de Grafana Cloud
+        # K6_CLOUD_TOKEN gestiona la salida a Cloud por defecto cuando está presente
+        K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }}
