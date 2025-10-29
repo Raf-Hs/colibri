@@ -1,0 +1,32 @@
+name: k6 Load Test
+
+on:
+  pull_request:
+    branches:
+      - main
+      - development
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 🟢 PASO 1: INSTALACIÓN MANUAL DE K6
+      - name: Install k6 (official repo)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      # 🟢 PASO 2: EJECUCIÓN DEL SCRIPT
+      - name: Run k6 load test (Cloud via ENV)
+        # 🟢 Mejor práctica: Dejar que el token en ENV active la salida a cloud
+        run: k6 run test/load-test.js 
+        env:
+          K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }}
