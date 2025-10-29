@@ -15,7 +15,7 @@ jobs:
     - name: Run k6 load test
       uses: grafana/run-k6-action@v1.2.0 
       with:        
-        path: colibri/test/load-test.js 
+        path: test/load-test.js 
 
       env:
         # K6_CLOUD_TOKEN gestiona la salida a Cloud por defecto cuando está presente
