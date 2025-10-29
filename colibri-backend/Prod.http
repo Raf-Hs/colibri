@@ -25,3 +25,12 @@ Content-Type: application/json
 ### 🔒 Ruta protegida de prueba (ejemplo con token)
 GET {{baseUrl}}/trips
 Authorization: Bearer {{token}}
+
+### 👥 Listar usuarios
+GET {{baseUrl}}/auth/users
+
+k6 cloud tests/load/k6-colibri.js \
+  -e BASE_URL=https://colibri-backend.onrender.com \
+  -e USER=test@colibri.com \
+  -e PASS=1234 \
+  -e K6_CLOUD_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."

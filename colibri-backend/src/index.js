@@ -12,5 +12,10 @@ app.get("/", (_, res) => res.send("API Colibrí ✅"));
 app.use("/auth", authRoutes);
 app.use("/trips", tripsRoutes);
 
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", time: new Date().toISOString() });
+});
+
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 API corriendo en http://localhost:${PORT}`));
