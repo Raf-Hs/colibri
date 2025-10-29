@@ -3,14 +3,15 @@ name: K6 Load Test
 on:
   push:
     branches: [ main, PROD ]
+  workflow_dispatch:
 
 jobs:
   k6-load-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install k6 (official repo)
         run: |
@@ -22,11 +23,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y k6
 
-      - name: Run Load Test in K6 Cloud
+      - name: Run k6 in Cloud (Grafana)
         env:
           K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER: ${{ secrets.USER }}
+          PASS: ${{ secrets.PASS }}
         run: |
           k6 cloud tests/load/k6-colibri.js \
-            -e BASE_URL=https://colibri-backend-od5b.onrender.com \
-            -e USER=test@colibri.com \
-            -e PASS=1234
+            -e BASE_URL="${BASE_URL}" \
+            -e USER="${USER}" \
+            -e PASS="${PASS}"
