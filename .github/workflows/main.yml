@@ -14,13 +14,13 @@ jobs:
 
     # 🟢 NUEVO PASO: Instalar k6
     - name: Install k6
-      uses: grafana/k6-action@v0.1.0 
+      uses: grafana/k6-action@v0.4.0 
       # Esta acción simplemente instala k6 y lo añade al PATH.
 
     - name: Run k6 load test
       # ⚠️ CAMBIO IMPORTANTE: Usaremos la misma acción, pero con la ruta del script ajustada.
       # La acción 'grafana/run-k6-action' es antigua; usaremos 'k6-action' para instalar y ejecutar.
-      uses: grafana/k6-action@v0.1.0 # Usamos la misma acción de instalación/ejecución
+      uses: grafana/k6-action@v0.4.0 # Usamos la misma acción de instalación/ejecución
       with:
         # La ruta que estás usando (asumiendo que es correcta después del checkout):
         script: test/load-test.js
