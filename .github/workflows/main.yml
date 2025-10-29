@@ -12,11 +12,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # 🟢 NUEVO PASO: Instalar k6
+    - name: Install k6
+      uses: grafana/k6-action@v0.1.0 
+      # Esta acción simplemente instala k6 y lo añade al PATH.
+
     - name: Run k6 load test
-      uses: grafana/run-k6-action@v1.2.0 
-      with:        
-        path: test/load-test.js 
+      # ⚠️ CAMBIO IMPORTANTE: Usaremos la misma acción, pero con la ruta del script ajustada.
+      # La acción 'grafana/run-k6-action' es antigua; usaremos 'k6-action' para instalar y ejecutar.
+      uses: grafana/k6-action@v0.1.0 # Usamos la misma acción de instalación/ejecución
+      with:
+        # La ruta que estás usando (asumiendo que es correcta después del checkout):
+        script: test/load-test.js
+        # El token de Cloud se sigue pasando por env para subir los resultados.
 
       env:
-        # K6_CLOUD_TOKEN gestiona la salida a Cloud por defecto cuando está presente
         K6_CLOUD_TOKEN: ${{ secrets.GRAFANA_CLOUD_K6_TOKEN_DIEGO }}
+        # También puedes añadir la flag de Cloud aquí, aunque el token debería ser suficiente
+        # K6_CLOUD_OUTPUT: true
