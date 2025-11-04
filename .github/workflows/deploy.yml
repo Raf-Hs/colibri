@@ -1,14 +1,33 @@
-deploy:
-  needs: build-and-push
-  runs-on: ubuntu-latest
-  steps:
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd /home/deployer/colibri
-          docker-compose pull
-          docker-compose up -d --remove-orphans
+name: Deploy to VPS
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker Images"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Crear carpeta del proyecto si no existe
+            mkdir -p /home/deployer/colibri
+            cd /home/deployer/colibri
+
+            # Actualizar docker-compose.yml desde el repo si lo tienes en Git
+            if [ ! -f docker-compose.yml ]; then
+              echo "docker-compose.yml no encontrado en VPS"
+            fi
+
+            # Descargar las imágenes más recientes
+            docker-compose pull
+
+            # Reconstruir y reiniciar los contenedores
+            docker-compose up -d --remove-orphans
