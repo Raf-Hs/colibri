@@ -7,6 +7,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,7 +24,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Backend
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
@@ -29,9 +31,8 @@ jobs:
           file: ./colibri-backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/raf-hs/colibri-backend:latest
+            ghcr.io/${{ github.repository_owner }}/colibri-backend:latest
 
-      # Frontend
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
@@ -39,4 +40,4 @@ jobs:
           file: ./colibri-frontend/Dockerfile
           push: true
           tags: |
-            ghcr.io/raf-hs/colibri-frontend:latest
+            ghcr.io/${{ github.repository_owner }}/colibri-frontend:latest
