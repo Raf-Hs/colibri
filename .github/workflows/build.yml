@@ -24,6 +24,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Normalize repository owner to lowercase
+        id: repo
+        run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
@@ -31,7 +35,7 @@ jobs:
           file: ./colibri-backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/colibri-backend:latest
+            ghcr.io/${{ steps.repo.outputs.owner }}/colibri-backend:latest
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
@@ -40,4 +44,4 @@ jobs:
           file: ./colibri-frontend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/colibri-frontend:latest
+            ghcr.io/${{ steps.repo.outputs.owner }}/colibri-frontend:latest
