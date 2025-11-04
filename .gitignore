@@ -18,3 +18,9 @@ build/
 
 # Vite cache
 .vite/
+
+# Capacitor
+android/
+ios/
+*.orig
+.DS_Store
