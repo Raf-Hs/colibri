@@ -1,14 +1,11 @@
 name: Deploy to VPS
 
 on:
-  workflow_run:
-    workflows: ["CI/CD"]
-    types:
-      - completed
+  push:
+    branches: [ main ]
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to VPS
@@ -19,5 +16,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/deployer/colibri
-            docker-compose pull
-            docker-compose up -d
+            docker compose pull
+            docker compose up -d
