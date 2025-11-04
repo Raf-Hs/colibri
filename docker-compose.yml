@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./colibri-backend
+    container_name: colibri-backend
+    restart: always
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./colibri-backend/.env
+    depends_on:
+      - db
+
+  frontend:
+    build: ./colibri-frontend
+    container_name: colibri-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    container_name: colibri-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: colibri
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
