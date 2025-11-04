@@ -7,8 +7,10 @@ services:
     restart: always
     ports:
       - "4000:4000"
-    env_file:
-      - ./colibri-backend/.env
+    environment:
+      - PORT=4000
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/colibri
+      - JWT_SECRET=colibri_secret
     depends_on:
       - db
 
@@ -26,9 +28,9 @@ services:
     container_name: colibri-db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: colibri
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=colibri
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:

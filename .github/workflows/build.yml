@@ -27,5 +27,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/raf-hs/colibri:latest
+            ghcr.io/raf-hs/colibri:${{ github.sha }}
