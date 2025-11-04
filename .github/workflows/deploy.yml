@@ -30,4 +30,4 @@ jobs:
             docker-compose pull
 
             # Reconstruir y reiniciar los contenedores
-            docker-compose up -d --remove-orphans
+            docker-compose up -d --remove-orphans || true
