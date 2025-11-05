@@ -1,30 +1,50 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Register.css"; // 👈 Importamos estilos
+import "./Register.css";
 
 export default function Register() {
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [password, setPassword] = useState("");
-  const [rol, setRol] = useState("viajero"); // viajero o conductor
+  const [form, setForm] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const nuevoUsuario = { nombre, email, telefono, password, rol };
+    try {
+      const res = await fetch("https://colibri-backend-od5b.onrender.com/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, rol: "viajero" }), // Rol por default pasajero
+      });
 
-    // guardar en localStorage simulando BD
-    const usuariosGuardados =
-      JSON.parse(localStorage.getItem("usuariosColibri")) || [];
-    localStorage.setItem(
-      "usuariosColibri",
-      JSON.stringify([...usuariosGuardados, nuevoUsuario])
-    );
+      const data = await res.json();
 
-    alert("✅ Registro exitoso. Ahora puedes iniciar sesión.");
-    navigate("/"); // vuelve al login
+      if (!res.ok) {
+        setError(data.message || "Error al registrar usuario");
+        setLoading(false);
+        return;
+      }
+
+      alert("✅ Registro exitoso. Ya puedes iniciar sesión.");
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      setError("No se pudo conectar al servidor. Intenta más tarde.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,67 +56,61 @@ export default function Register() {
             alt="Colibrí logo"
             className="register-logo"
           />
-          <h1 className="register-title">Colibrí</h1>
-          <h2 className="register-subtitle">Crear cuenta</h2>
+          <h1 className="register-title">Registro de Pasajero</h1>
+          <h2 className="register-subtitle">Viaja seguro con Huitzilin</h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="register-form">
+        {error && <div className="register-error">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="register-form" autoComplete="off">
           <input
             type="text"
+            name="nombre"
             placeholder="Nombre completo"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
+            value={form.nombre}
+            onChange={handleChange}
             required
             className="register-input"
           />
 
           <input
             type="email"
+            name="email"
             placeholder="Correo electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={form.email}
+            onChange={handleChange}
             required
             className="register-input"
           />
 
           <input
             type="tel"
+            name="telefono"
             placeholder="Teléfono"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
+            value={form.telefono}
+            onChange={handleChange}
             required
             className="register-input"
           />
 
           <input
             type="password"
+            name="password"
             placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={form.password}
+            onChange={handleChange}
             required
             className="register-input"
           />
 
-          <select
-            value={rol}
-            onChange={(e) => setRol(e.target.value)}
-            className="register-select"
-          >
-            <option value="viajero">Viajero</option>
-            <option value="conductor">Conductor</option>
-          </select>
-
-          <button type="submit" className="register-button">
-            Registrarse
+          <button type="submit" className="register-button" disabled={loading}>
+            {loading ? "Registrando..." : "Registrarse como Pasajero"}
           </button>
         </form>
 
         <p className="register-footer">
           ¿Ya tienes cuenta?{" "}
-          <button
-            onClick={() => navigate("/")}
-            className="register-link"
-          >
+          <button onClick={() => navigate("/")} className="register-link">
             Inicia sesión
           </button>
         </p>
