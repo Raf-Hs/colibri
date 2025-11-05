@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  GoogleMap,
-  LoadScript,
-  Marker,
-  DirectionsRenderer,
-} from "@react-google-maps/api";
+import { GoogleMap, Marker, DirectionsRenderer } from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
@@ -14,7 +9,7 @@ const containerStyle = {
 
 const fallbackCenter = { lat: 21.3589, lng: -99.6733 };
 
-export default function MapaRutas({ onSelect }) {
+export default function MapaRutas({ onSelect, marcadorConductor }) {
   const [map, setMap] = useState(null);
   const [center, setCenter] = useState(fallbackCenter);
   const [origin, setOrigin] = useState(null);
@@ -23,6 +18,7 @@ export default function MapaRutas({ onSelect }) {
   const [originText, setOriginText] = useState("");
   const [destinationText, setDestinationText] = useState("");
 
+  // === UBICACIÓN INICIAL ===
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -39,6 +35,7 @@ export default function MapaRutas({ onSelect }) {
     }
   }, [onSelect]);
 
+  // === CLICK EN EL MAPA ===
   const handleClick = (e) => {
     const clicked = { lat: e.latLng.lat(), lng: e.latLng.lng() };
 
@@ -63,6 +60,7 @@ export default function MapaRutas({ onSelect }) {
     }
   };
 
+  // === CALCULAR RUTA ===
   const calcularRuta = (orig, dest) => {
     const svc = new window.google.maps.DirectionsService();
     svc.route(
@@ -88,6 +86,7 @@ export default function MapaRutas({ onSelect }) {
     );
   };
 
+  // === UBICACIÓN ACTUAL ===
   const usarMiUbicacion = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -105,53 +104,82 @@ export default function MapaRutas({ onSelect }) {
   };
 
   return (
-    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-      <div className="map-wrapper">
-        <div className="inputs-mapa">
-          <input
-            type="text"
-            placeholder="📍 Lugar de salida"
-            className="map-input"
-            value={originText}
-            onChange={(e) => setOriginText(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="🏁 Destino"
-            className="map-input"
-            value={destinationText}
-            onChange={(e) => setDestinationText(e.target.value)}
-          />
-        </div>
-
-        <div className="map-container">
-          <GoogleMap
-  mapContainerStyle={containerStyle}
-  center={center}
-  zoom={14}
-  onClick={handleClick}
-  onLoad={(m) => setMap(m)}
-  options={{
-    streetViewControl: false,   // quita pegman
-    mapTypeControl: false,      // quita mapa/satélite
-    fullscreenControl: false,   // quita fullscreen
-    zoomControl: false,
-    clickableIcons: false,      // evita íconos innecesarios
-    disableDefaultUI: false,    // mantiene los necesarios
-    disableDefaultUI: true,
-  }}
->
-
-            {origin && <Marker position={origin} label="A" />}
-            {destination && <Marker position={destination} label="B" />}
-            {directions && <DirectionsRenderer directions={directions} />}
-          </GoogleMap>
-
-          <button className="gps-fab" onClick={usarMiUbicacion}>
-            📍
-          </button>
-        </div>
+    <div className="map-wrapper">
+      <div className="inputs-mapa">
+        <input
+          type="text"
+          placeholder="📍 Lugar de salida"
+          className="map-input"
+          value={originText}
+          onChange={(e) => setOriginText(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="🏁 Destino"
+          className="map-input"
+          value={destinationText}
+          onChange={(e) => setDestinationText(e.target.value)}
+        />
       </div>
-    </LoadScript>
+
+      <div className="map-container">
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={center}
+          zoom={14}
+          onClick={handleClick}
+          onLoad={(m) => setMap(m)}
+          options={{
+            streetViewControl: false,
+            mapTypeControl: false,
+            fullscreenControl: false,
+            zoomControl: false,
+            clickableIcons: false,
+            disableDefaultUI: true,
+          }}
+        >
+          {/* Marcadores de origen y destino (solo si no hay ruta trazada) */}
+          {!directions && origin && <Marker position={origin} label="A" />}
+          {!directions && destination && <Marker position={destination} label="B" />}
+
+          {/* Render de la ruta */}
+          {directions && <DirectionsRenderer directions={directions} />}
+
+          {/* 🔹 Marcador del conductor en movimiento */}
+          {marcadorConductor && (
+            <Marker
+              position={marcadorConductor}
+              icon={{
+                path: window.google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                fillColor: "#28a745",
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: "#fff",
+              }}
+            />
+          )}
+
+          {/* 🔵 Marcador del usuario (GPS actual) */}
+          {origin && (
+            <Marker
+              position={origin}
+              icon={{
+                path: window.google.maps.SymbolPath.CIRCLE,
+                scale: 7,
+                fillColor: "#4285F4",
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: "#fff",
+              }}
+            />
+          )}
+        </GoogleMap>
+
+        <button className="gps-fab" onClick={usarMiUbicacion}>
+          📍
+        </button>
+      </div>
+    </div>
   );
 }
