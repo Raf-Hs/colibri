@@ -26,7 +26,7 @@ export default function Verify2FA() {
         setError("Código incorrecto. Intenta nuevamente.");
       }
     } catch (err) {
-      setError("Error al verificar el código.");
+      setError("Error al verificar el código.", err);
     } finally {
       setLoading(false);
     }

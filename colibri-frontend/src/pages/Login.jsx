@@ -22,7 +22,7 @@ export default function Login() {
       setQr(fakeQR);
       setShowQR(true);
     } catch (err) {
-      setError("Error en modo desarrollador");
+      setError("Error en modo desarrollador", err);
     } finally {
       setLoading(false);
     }
