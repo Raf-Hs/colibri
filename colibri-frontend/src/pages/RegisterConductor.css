@@ -170,7 +170,7 @@
   border-bottom-color: #20c997;
 }
 
-/* Indicador de fortaleza de contraseña (opcional) */
+/* Indicador de fortaleza de contraseña */
 .password-strength {
   margin-top: 0.5rem;
   height: 4px;
@@ -264,7 +264,7 @@
   color: #DC3545;
 }
 
-/* Checkbox personalizado (si lo usas para términos) */
+/* Checkbox personalizado */
 .checkbox-container {
   display: flex;
   align-items: center;
@@ -396,6 +396,8 @@
   }
 }
 
+
+
 .preview-grid {
   display: flex;
   flex-wrap: wrap;
@@ -408,3 +410,4 @@
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
