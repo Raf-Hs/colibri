@@ -120,7 +120,7 @@ export default function Login() {
               Registrarse como Pasajero
             </Link>
             <Link to="/register-conductor" className="login-link">
-              🧑Registrarse como Conductor
+              Registrarse como Conductor
             </Link>
           </div>
         </div>
