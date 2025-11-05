@@ -41,4 +41,3 @@ export default function Enable2FA() {
     </div>
   );
 }
-import { useState } from "react";
