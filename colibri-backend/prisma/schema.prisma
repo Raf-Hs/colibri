@@ -21,15 +21,17 @@ enum TripStatus {
 }
 
 model Usuario {
-  id        Int     @id @default(autoincrement())
-  nombre    String
-  email     String  @unique
-  telefono  String
-  password  String
-  rol       String  // "viajero" | "conductor" | "ambos" (flexible)
-  createdAt DateTime @default(now())
-  viajes    Viaje[] @relation("UsuarioViajes")
+  id         Int       @id @default(autoincrement())
+  nombre     String
+  email      String    @unique
+  telefono   String
+  password   String
+  rol        String
+  secret2FA  String?   // ← necesario para 2FA (puede ser null)
+  createdAt  DateTime  @default(now())
+  viajes     Viaje[]   @relation("UsuarioViajes")
 }
+
 
 model Viaje {
   id          Int        @id @default(autoincrement())
