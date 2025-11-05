@@ -1,199 +1,185 @@
 import { useState, useEffect } from "react";
-import "./Home.css"; // 👈 Importamos estilos puros
+import MapaRutas from "../components/MapaRuta";
+import "./Home.css";
 
 export default function Home() {
-  const [origen, setOrigen] = useState("");
-  const [destino, setDestino] = useState("");
-  const [conductor, setConductor] = useState("");
-  const [metodoPago, setMetodoPago] = useState("efectivo");
-  const [viajeActual, setViajeActual] = useState(null);
-  const [calificacion, setCalificacion] = useState(null);
+  const [viaje, setViaje] = useState({
+    origen: null,
+    destino: null,
+    distancia: "",
+    duracion: "",
+    directions: null,
+    estado: "pendiente",
+  });
 
-  // Generar costo aleatorio (50–300)
-  const generarCosto = () =>
-    Math.floor(Math.random() * (300 - 50 + 1)) + 50;
+  const [ofertas, setOfertas] = useState([]);
 
+  const handleSelect = (data) => {
+    setViaje((prev) => ({ ...prev, ...data }));
+  };
+
+  const calcularCosto = () => {
+    if (!viaje.distancia) return 0;
+    const km = parseFloat(viaje.distancia.replace(" km", "").replace(",", "."));
+    const base = 25;
+    const porKm = 8.5;
+    return (base + km * porKm).toFixed(2);
+  };
+
+  const costo = calcularCosto();
+
+  const solicitarViaje = () => {
+    if (!viaje.directions) return;
+    setViaje((prev) => ({ ...prev, estado: "buscando" }));
+    setOfertas([]);
+
+    // Simular llegada de ofertas
+    setTimeout(() => {
+      setOfertas([
+        {
+          id: 1,
+          nombre: "Carlos M.",
+          rating: 4.8,
+          tiempo: "3 min",
+          precio: costo,
+          restante: 10,
+        },
+        {
+          id: 2,
+          nombre: "Laura R.",
+          rating: 4.6,
+          tiempo: "5 min",
+          precio: (costo * 1.1).toFixed(2),
+          restante: 10,
+        },
+      ]);
+    }, 1500);
+  };
+
+  // Temporizador individual por oferta
   useEffect(() => {
-    const viajesGuardados =
-      JSON.parse(localStorage.getItem("viajesColibri")) || [];
-    if (viajesGuardados.length > 0) {
-      const ultimo = viajesGuardados[viajesGuardados.length - 1];
-      setViajeActual(ultimo);
-      setCalificacion(ultimo.calificacion || null);
-    }
-  }, []);
+    if (viaje.estado !== "buscando" || ofertas.length === 0) return;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    const interval = setInterval(() => {
+      setOfertas((prev) =>
+        prev
+          .map((o) => ({
+            ...o,
+            restante: o.restante > 0 ? o.restante - 1 : 0,
+          }))
+          .filter((o) => o.restante > 0)
+      );
+    }, 1000);
 
-    const nuevoViaje = {
-      id: Date.now(),
-      origen,
-      destino,
-      costo: generarCosto(),
-      conductor,
-      metodoPago,
-      estado: "pendiente",
-      calificacion: null,
-    };
+    return () => clearInterval(interval);
+  }, [viaje.estado, ofertas.length]);
 
-    const viajesGuardados =
-      JSON.parse(localStorage.getItem("viajesColibri")) || [];
-    const viajesActualizados = [...viajesGuardados, nuevoViaje];
-    localStorage.setItem("viajesColibri", JSON.stringify(viajesActualizados));
-
-    setViajeActual(nuevoViaje);
-    setCalificacion(null);
-
-    alert("🚕 Viaje creado correctamente ✅");
-    setOrigen("");
-    setDestino("");
-    setConductor("");
-    setMetodoPago("efectivo");
+  const aceptarOferta = (oferta) => {
+    setViaje((prev) => ({ ...prev, estado: "en-curso", conductor: oferta }));
+    setOfertas([]);
   };
 
-  const cambiarEstado = () => {
-    if (!viajeActual) return;
-    let nuevoEstado = "pendiente";
-    if (viajeActual.estado === "pendiente") nuevoEstado = "en curso";
-    else if (viajeActual.estado === "en curso") nuevoEstado = "finalizado";
-    else nuevoEstado = viajeActual.estado;
-
-    const actualizado = { ...viajeActual, estado: nuevoEstado };
-    setViajeActual(actualizado);
-
-    const viajesGuardados =
-      JSON.parse(localStorage.getItem("viajesColibri")) || [];
-    const viajesActualizados = viajesGuardados.map((v) =>
-      v.id === viajeActual.id ? actualizado : v
-    );
-    localStorage.setItem("viajesColibri", JSON.stringify(viajesActualizados));
-  };
-
-  const cancelarViaje = () => {
-    if (!viajeActual) return;
-    const cancelado = { ...viajeActual, estado: "cancelado" };
-    setViajeActual(cancelado);
-
-    const viajesGuardados =
-      JSON.parse(localStorage.getItem("viajesColibri")) || [];
-    const viajesActualizados = viajesGuardados.map((v) =>
-      v.id === viajeActual.id ? cancelado : v
-    );
-    localStorage.setItem("viajesColibri", JSON.stringify(viajesActualizados));
-    alert("❌ El viaje ha sido cancelado");
-  };
-
-  const guardarCalificacion = (valor) => {
-    const calificado = { ...viajeActual, calificacion: valor };
-    setViajeActual(calificado);
-    setCalificacion(valor);
-
-    const viajesGuardados =
-      JSON.parse(localStorage.getItem("viajesColibri")) || [];
-    const viajesActualizados = viajesGuardados.map((v) =>
-      v.id === viajeActual.id ? calificado : v
-    );
-    localStorage.setItem("viajesColibri", JSON.stringify(viajesActualizados));
+  const finalizarViaje = () => {
+    setViaje((prev) => ({ ...prev, estado: "finalizado" }));
   };
 
   return (
     <div className="home-container">
       <div className="home-box">
-        <h1 className="home-title">🐦 Colibrí — Crear viaje</h1>
+        <h1 className="home-title">Huitzilin</h1>
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="home-form">
-          <input
-            type="text"
-            placeholder="Origen"
-            value={origen}
-            onChange={(e) => setOrigen(e.target.value)}
-            required
-            className="home-input"
-          />
+        <section className="map-section">
+          <MapaRutas onSelect={handleSelect} />
+        </section>
 
-          <input
-            type="text"
-            placeholder="Destino"
-            value={destino}
-            onChange={(e) => setDestino(e.target.value)}
-            required
-            className="home-input"
-          />
+        {viaje.directions && (
+          <>
+            <div className="trip-miniinfo">
+              <p>
+                <strong>Distancia:</strong> {viaje.distancia}
+              </p>
+              <p>
+                <strong>Duración:</strong> {viaje.duracion}
+              </p>
+            </div>
 
-          <input
-            type="text"
-            placeholder="Conductor"
-            value={conductor}
-            onChange={(e) => setConductor(e.target.value)}
-            required
-            className="home-input"
-          />
+            {/* Tarjeta principal */}
+            <div className="trip-card">
+              <div className="trip-cost">
+                <p className="trip-price">${costo}</p>
+                <span className="trip-label">Tarifa estimada</span>
+              </div>
 
-          <select
-            value={metodoPago}
-            disabled
-            onChange={(e) => setMetodoPago(e.target.value)}
-            className="home-select"
-          >
-            <option value="efectivo">Efectivo</option>
-            <option value="tarjeta">Tarjeta (próximamente)</option>
-          </select>
+              {viaje.estado === "pendiente" && (
+                <button className="home-button" onClick={solicitarViaje}>
+                  Solicitar viaje
+                </button>
+              )}
 
-          <button type="submit" className="home-button">
-            Crear viaje
-          </button>
-        </form>
+              {/* BUSCANDO */}
+              {viaje.estado === "buscando" && (
+                <div className="trip-card buscando">
+                  <p className="buscando-titulo">
+                    🔍 Buscando conductores disponibles...
+                  </p>
 
-        {/* Viaje actual */}
-        {viajeActual && (
-          <div className="viaje-actual">
-            <h2 className="viaje-title">🚖 Viaje actual</h2>
-            <p><strong>De:</strong> {viajeActual.origen}</p>
-            <p><strong>A:</strong> {viajeActual.destino}</p>
-            <p><strong>Conductor:</strong> {viajeActual.conductor}</p>
-            <p><strong>Costo:</strong> ${viajeActual.costo}</p>
-            <p><strong>Estado:</strong> 
-              <span className={`estado ${viajeActual.estado}`}>
-                {viajeActual.estado}
-              </span>
-            </p>
+                  {ofertas.length === 0 ? (
+                    <p className="buscando-texto">Esperando resultados...</p>
+                  ) : (
+                    <div className="ofertas-lista compacta">
+                      {ofertas.map((o) => (
+                        <div key={o.id} className="oferta-card compacta">
+                          <div className="oferta-info">
+                            <h3>{o.nombre}</h3>
+                            <p>
+                              ⭐ {o.rating} · {o.tiempo}
+                            </p>
+                            <p className="oferta-timer">
+                              ⏳ {o.restante}s restantes
+                            </p>
+                          </div>
+                          <div className="oferta-precio">
+                            <span>${o.precio}</span>
+                            <button
+                              className="btn-estado verde"
+                              onClick={() => aceptarOferta(o)}
+                            >
+                              Aceptar
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {viajeActual.estado !== "finalizado" &&
-              viajeActual.estado !== "cancelado" && (
-                <div className="botones-estado">
-                  <button onClick={cambiarEstado} className="btn-estado verde">
-                    Cambiar estado
-                  </button>
-                  <button onClick={cancelarViaje} className="btn-estado rojo">
-                    Cancelar viaje
+              {/* EN CURSO */}
+              {viaje.estado === "en-curso" && (
+                <div className="viaje-actual">
+                  <p>
+                    <strong>Conductor:</strong> {viaje.conductor?.nombre} ⭐{" "}
+                    {viaje.conductor?.rating}
+                  </p>
+                  <p>🚗 En camino ({viaje.conductor?.tiempo})</p>
+                  <button
+                    className="btn-estado verde"
+                    onClick={finalizarViaje}
+                    style={{ marginTop: "0.8rem" }}
+                  >
+                    Finalizar viaje
                   </button>
                 </div>
               )}
 
-            {viajeActual.estado === "finalizado" && (
-              <div className="calificacion">
-                <h3>Califica este viaje:</h3>
-                <div className="estrellas">
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <button
-                      key={num}
-                      onClick={() => guardarCalificacion(num)}
-                      className={`estrella ${calificacion === num ? "activo" : ""}`}
-                    >
-                      {num}
-                    </button>
-                  ))}
+              {/* FINALIZADO */}
+              {viaje.estado === "finalizado" && (
+                <div className="viaje-actual finalizado">
+                  <p>✅ Viaje finalizado con éxito.</p>
                 </div>
-                {calificacion && (
-                  <p className="mensaje-ok">
-                    ✅ Has calificado este viaje con {calificacion}/5
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

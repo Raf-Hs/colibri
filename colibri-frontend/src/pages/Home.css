@@ -1,116 +1,174 @@
-/* Contenedor principal con gradiente */
 .home-container {
   display: flex;
   justify-content: center;
   align-items: center;
   background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: "Inter", sans-serif;
   padding: 1rem;
 }
 
-/* Caja principal con animación */
 .home-box {
   width: 100%;
   max-width: 550px;
   background: white;
-  padding: 2.5rem 2rem;
+  padding: 2rem;
   border-radius: 24px;
   box-shadow: 0 8px 32px rgba(40, 167, 69, 0.12);
-  animation: slideUp 0.5s ease-out;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Título principal */
 .home-title {
   text-align: center;
-  color: #28A745;
+  color: #28a745;
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 2rem;
-  letter-spacing: -0.5px;
-  position: relative;
-  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.home-title::after {
-  content: '🚗';
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 2.5rem;
-  animation: bounce 2s ease-in-out infinite;
+/* === CONTENEDOR MAPA UNIFICADO === */
+.map-section {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #eaeaea;
 }
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+/* Elimina el borde doble interno */
+.map-wrapper {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
-/* Formulario con espaciado mejorado */
-.home-form {
+/* Inputs completamente dentro del borde */
+.inputs-mapa {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
 }
 
-/* Inputs y selects modernos */
-.home-input,
-.home-select {
-  padding: 1rem 1.25rem;
-  border: 2px solid #e0e0e0;
+.map-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1.8px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.map-input:focus {
+  border-color: #28a745;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.15);
+}
+
+/* Ajusta mapa y botón GPS */
+.map-container {
+  position: relative;
+  height: 46vh;
   border-radius: 12px;
-  font-size: 1.05rem;
-  transition: all 0.3s ease;
-  background-color: #fafafa;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
 }
 
-.home-input:focus,
-.home-select:focus {
-  outline: none;
-  border-color: #28A745;
-  background-color: white;
-  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
-  transform: translateY(-2px);
-}
-
-.home-input::placeholder {
-  color: #adb5bd;
-}
-
-.home-select {
+.gps-fab {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2328A745' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  padding-right: 3rem;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease;
 }
 
-/* Botón principal grande y llamativo */
+.gps-fab:hover {
+  transform: scale(1.05);
+}
+
+/* Mini-info más compacta debajo del mapa */
+.trip-miniinfo {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  background: #f8fdf9;
+  border-radius: 10px;
+  padding: 0.4rem 0.8rem;
+  margin: 0.6rem auto 1rem;
+  font-size: 0.85rem;
+  color: #495057;
+  width: fit-content;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.trip-miniinfo p {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ===== TARJETA DE VIAJE ===== */
+.trip-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 8px 24px rgba(40, 167, 69, 0.12);
+  margin-top: 1rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.trip-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.trip-info,
+.trip-locs {
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.trip-cost {
+  text-align: center;
+  margin-top: 0.6rem;
+}
+
+.trip-price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #28a745;
+}
+
+.trip-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+/* ===== BOTÓN ===== */
 .home-button {
-  background: linear-gradient(135deg, #28A745 0%, #20c997 100%);
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
   color: white;
   border: none;
-  padding: 1.1rem;
+  padding: 1rem;
   border-radius: 12px;
   cursor: pointer;
   font-weight: 700;
   font-size: 1.1rem;
-  margin-top: 0.5rem;
+  width: 100%;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
   text-transform: uppercase;
@@ -122,131 +180,33 @@
   box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
-.home-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-}
-
-/* Sección de viaje actual */
+/* ===== ESTADOS DEL VIAJE ===== */
 .viaje-actual {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid #e9ecef;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
-  border-radius: 16px;
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Título de viaje */
-.viaje-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: #212529;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.viaje-title::before {
-  content: '📍';
-  font-size: 1.5rem;
-}
-
-/* Estados mejorados */
-.estado {
-  display: inline-block;
-  margin-left: 0.75rem;
-  padding: 0.35rem 0.85rem;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: capitalize;
-  letter-spacing: 0.3px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.estado.pendiente {
-  background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
-  color: #5d4037;
-}
-
-.estado.en\ curso,
-.estado.en-curso {
-  background: linear-gradient(135deg, #007BFF 0%, #0056b3 100%);
-  color: white;
-}
-
-.estado.finalizado {
-  background: linear-gradient(135deg, #28A745 0%, #20c997 100%);
-  color: white;
-}
-
-.estado.cancelado {
-  background: linear-gradient(135deg, #DC3545 0%, #c82333 100%);
-  color: white;
-}
-
-.estado::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 0.5rem;
-  background: currentColor;
-}
-
-.estado.pendiente::before,
-.estado.en\ curso::before,
-.estado.en-curso::before {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* Botones de estado */
-.botones-estado {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-}
-
-.btn-estado {
-  flex: 1;
-  padding: 0.75rem;
-  border: none;
+  background: #f1fff4;
   border-radius: 12px;
-  color: white;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 500;
+  color: #2e7d32;
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.15);
 }
 
+.viaje-actual.finalizado {
+  background: #e9f7ef;
+  color: #28a745;
+}
+
+/* ===== BOTÓN DE ESTADO ===== */
 .btn-estado.verde {
   background: linear-gradient(135deg, #28A745 0%, #20c997 100%);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  border: none;
+  color: white;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  margin-top: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .btn-estado.verde:hover {
@@ -254,163 +214,103 @@
   box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
 }
 
-.btn-estado.verde:active {
-  transform: translateY(0);
-}
-
-.btn-estado.rojo {
-  background: linear-gradient(135deg, #DC3545 0%, #c82333 100%);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-}
-
-.btn-estado.rojo:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
-}
-
-.btn-estado.rojo:active {
-  transform: translateY(0);
-}
-
-/* Sección de calificación */
-.calificacion {
-  margin-top: 1.5rem;
-  padding: 1.25rem;
-  background: white;
-  border-radius: 12px;
-  border: 2px solid #e9ecef;
-}
-
-.calificacion h3 {
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
-  color: #495057;
-  font-weight: 600;
-}
-
-/* Estrellas mejoradas */
-.estrellas {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin: 1rem 0;
-}
-
-.estrella {
-  padding: 0.75rem 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  background: #f8f9fa;
-  cursor: pointer;
-  font-size: 1.5rem;
-  transition: all 0.3s ease;
-  user-select: none;
-}
-
-.estrella:hover {
-  transform: scale(1.15) rotate(5deg);
-  border-color: #FFD700;
-  background: #fffef7;
-}
-
-.estrella.activo {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  color: white;
-  border-color: #FFD700;
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-}
-
-.estrella.activo:hover {
-  transform: scale(1.2) rotate(5deg);
-}
-
-/* Mensaje de éxito */
-.mensaje-ok {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  color: #28A745;
-  font-weight: 600;
-  background: rgba(40, 167, 69, 0.1);
-  border-radius: 8px;
-  text-align: center;
-  animation: slideIn 0.4s ease-out;
-}
-
-@keyframes slideIn {
+/* ===== ANIMACIONES ===== */
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
-.mensaje-ok::before {
-  content: '✓ ';
-  font-size: 1.2rem;
-  margin-right: 0.25rem;
+/* === OFERTAS DE CONDUCTORES === */
+.ofertas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
 }
 
-/* Información del viaje */
-.viaje-actual p {
-  margin: 0.75rem 0;
+.oferta-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fdf9;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.oferta-info h3 {
+  margin: 0;
   font-size: 1rem;
-  color: #495057;
-  line-height: 1.6;
+  color: #212529;
 }
 
-.viaje-actual p strong {
+.oferta-info p {
+  margin: 0.2rem 0 0;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+
+.ofertas-lista.compacta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.oferta-card.compacta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fdf9;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  font-size: 0.9rem;
+}
+
+.oferta-info h3 {
+  margin: 0;
+  font-size: 0.95rem;
   color: #212529;
+}
+
+.oferta-info p {
+  margin: 0.1rem 0;
+  color: #495057;
+  font-size: 0.85rem;
+}
+
+.oferta-timer {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.oferta-precio {
+  text-align: right;
+  min-width: 80px;
+}
+
+.oferta-precio span {
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #28a745;
+  margin-bottom: 0.3rem;
+}
+
+.buscando-titulo {
+  text-align: center;
   font-weight: 600;
 }
 
-/* Responsive */
-@media (max-width: 640px) {
-  .home-box {
-    padding: 2rem 1.5rem;
-    border-radius: 20px;
-  }
-
-  .home-title {
-    font-size: 1.75rem;
-  }
-
-  .home-input,
-  .home-select,
-  .home-button {
-    font-size: 1rem;
-  }
-
-  .botones-estado {
-    flex-direction: column;
-  }
-
-  .btn-estado {
-    width: 100%;
-  }
-
-  .estrella {
-    padding: 0.6rem 0.8rem;
-    font-size: 1.3rem;
-  }
-
-  .viaje-actual {
-    padding: 1.25rem;
-  }
-}
-
-/* Loading state para botones */
-.home-button:disabled,
-.btn-estado:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.home-button:disabled:hover,
-.btn-estado:disabled:hover {
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+.buscando-texto {
+  text-align: center;
+  color: #6c757d;
+  margin-top: 0.5rem;
 }
