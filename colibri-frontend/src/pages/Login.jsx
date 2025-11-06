@@ -73,19 +73,23 @@ export default function Login() {
   };
 
   // === CIERRE DEL QR (Simula que ya escaneó) ===
+  // === CIERRE DEL QR (Simula que ya escaneó) ===
   const closeQR = () => {
     setShowQR(false);
     alert("✅ Escanea el código QR en Google Authenticator para activar 2FA.");
 
     // 🔹 Simulación de sesión: si el correo contiene 'driver', será conductor
-    const rolSimulado = email.toLowerCase().includes("driver") ? "conductor" : "viajero";
+    const rolSimulado = email.toLowerCase().includes("driver")
+      ? "conductor"
+      : "viajero";
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("rol", data.rol || "viajero");
+    localStorage.setItem("token", "fake-jwt-token");
+    localStorage.setItem("rol", rolSimulado);
     localStorage.setItem("userEmail", email);
 
     navigate("/home");
   };
+
 
   return (
     <div className="login-container">
