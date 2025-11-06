@@ -7,11 +7,11 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Ocultar sidebar en login, registro y splash
+  // === Ocultar sidebar en pantallas públicas ===
   if (
-    location.pathname === "/" ||
-    location.pathname === "/register" ||
-    location.pathname === "/splash"
+    ["/", "/register", "/register-conductor", "/verify", "/splash"].includes(
+      location.pathname
+    )
   ) {
     return null;
   }
@@ -19,9 +19,11 @@ export default function Sidebar() {
   // === FUNCIÓN DE CIERRE DE SESIÓN ===
   const cerrarSesion = () => {
     try {
-      // Borra viajes, usuario u otros datos temporales
+      // Elimina token, rol, viajes y datos del usuario
+      localStorage.removeItem("token");
+      localStorage.removeItem("rol");
+      localStorage.removeItem("userEmail");
       localStorage.removeItem("viajesColibri");
-      localStorage.removeItem("usuario");
       localStorage.clear();
 
       // Redirige al login
@@ -36,14 +38,14 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Botón hamburguesa visible solo cuando el sidebar está cerrado */}
+      {/* === BOTÓN HAMBURGUESA === */}
       {!open && (
         <button className="menu-btn" onClick={() => setOpen(true)}>
           ☰
         </button>
       )}
 
-      {/* Sidebar lateral */}
+      {/* === SIDEBAR === */}
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <div className="sidebar-header">
           <h2 className="sidebar-logo">
@@ -71,14 +73,13 @@ export default function Sidebar() {
             📋 Historial
           </Link>
 
-          {/* Botón cerrar sesión */}
           <button className="logout-btn" onClick={cerrarSesion}>
             🚪 Cerrar sesión
           </button>
         </nav>
       </aside>
 
-      {/* Fondo opaco detrás del menú */}
+      {/* === OVERLAY OSCURO === */}
       {open && <div className="overlay" onClick={() => setOpen(false)} />}
     </>
   );

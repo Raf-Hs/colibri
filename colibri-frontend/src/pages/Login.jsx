@@ -11,12 +11,11 @@ export default function Login() {
   const [showQR, setShowQR] = useState(false);
   const navigate = useNavigate();
 
-  // Simulación rápida para pruebas locales
+  // === LOGIN DESARROLLO ===
   const devLogin = async () => {
     setLoading(true);
     setError("");
     try {
-      // Simulación de respuesta backend
       const fakeQR =
         "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SimulacionQR_Huitzilin";
       setQr(fakeQR);
@@ -28,7 +27,7 @@ export default function Login() {
     }
   };
 
-  // Login real (con backend y 2FA QR)
+  // === LOGIN REAL ===
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -48,7 +47,7 @@ export default function Login() {
         return;
       }
 
-      // Si requiere 2FA → Mostrar QR
+      // Si requiere 2FA
       if (data.require2FA) {
         const qrRes = await fetch(
           `https://colibri-backend-od5b.onrender.com/auth/generate-2fa/${email}`
@@ -59,8 +58,11 @@ export default function Login() {
         return;
       }
 
-      // Si no requiere 2FA → Guardar token y continuar
+      // 🔹 Guardar sesión y rol
       localStorage.setItem("token", data.token);
+      localStorage.setItem("rol", data.rol || "viajero");
+      localStorage.setItem("userEmail", email);
+
       navigate("/home");
     } catch (err) {
       console.error(err);
@@ -70,11 +72,18 @@ export default function Login() {
     }
   };
 
-  //Cerrar overlay QR (simula que ya escaneó)
+  // === CIERRE DEL QR (Simula que ya escaneó) ===
   const closeQR = () => {
     setShowQR(false);
     alert("✅ Escanea el código QR en Google Authenticator para activar 2FA.");
-    localStorage.setItem("token", "fake-jwt-token");
+
+    // 🔹 Simulación de sesión: si el correo contiene 'driver', será conductor
+    const rolSimulado = email.toLowerCase().includes("driver") ? "conductor" : "viajero";
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("rol", data.rol || "viajero");
+    localStorage.setItem("userEmail", email);
+
     navigate("/home");
   };
 
@@ -125,7 +134,6 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Botón modo desarrollador */}
         <button
           onClick={devLogin}
           className="login-dev-button"
@@ -142,11 +150,11 @@ export default function Login() {
         </button>
       </div>
 
-      {/* Overlay QR Authenticator */}
+      {/* === OVERLAY QR === */}
       {showQR && (
         <div className="qr-overlay">
           <div className="qr-modal">
-            <h2> Configura tu verificación 2FA</h2>
+            <h2>Configura tu verificación 2FA</h2>
             <p>Escanea este código en Google Authenticator o Authy:</p>
             <img src={qr} alt="QR 2FA" className="qr-image" />
             <p className="qr-info">

@@ -3,13 +3,21 @@ import MapaRutas from "../components/MapaRuta";
 import "./Home.css";
 
 export default function Home() {
+  const rol = localStorage.getItem("rol") || "viajero"; // "conductor" o "viajero"
+
+  // 🔹 Log del tipo de usuario al entrar
+  useEffect(() => {
+    console.log(`🟢 Usuario autenticado como: ${rol.toUpperCase()}`);
+  }, [rol]);
+
+  const [activo, setActivo] = useState(false); // solo para conductores
   const [viaje, setViaje] = useState({
     origen: null,
     destino: null,
     distancia: "",
     duracion: "",
     directions: null,
-    estado: "pendiente", // pendiente | buscando | asignado | en-curso | finalizado
+    estado: "pendiente",
     conductor: null,
   });
 
@@ -32,7 +40,44 @@ export default function Home() {
   };
   const costo = calcularCosto();
 
-  // === Solicitud y simulación de ofertas ===
+  // === MODO CONDUCTOR ===
+  if (rol === "conductor") {
+    return (
+      <div className="home-container">
+        <div className="home-box">
+          <h1 className="home-title">Panel de Conductor</h1>
+
+          <section className="map-section">
+            <MapaRutas marcadorConductor={posicionConductor} />
+          </section>
+
+          <div className="trip-card">
+            {!activo ? (
+              <button className="home-button" onClick={() => setActivo(true)}>
+                🚗 Recibir Viajes
+              </button>
+            ) : (
+              <div className="viaje-actual">
+                <p>
+                  ✅ Estado: <strong>Activo</strong>
+                </p>
+                <p>Esperando solicitudes de viaje...</p>
+                <button
+                  className="btn-estado verde"
+                  style={{ background: "#dc3545", marginTop: "0.8rem" }}
+                  onClick={() => setActivo(false)}
+                >
+                  Detener
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // === MODO VIAJERO ===
   const solicitarViaje = () => {
     if (!viaje.directions) return;
     setViaje((v) => ({ ...v, estado: "buscando" }));
@@ -61,7 +106,6 @@ export default function Home() {
     }, 1500);
   };
 
-  // === Timers de decisión ===
   useEffect(() => {
     if (viaje.estado !== "buscando" || ofertas.length === 0) return;
     const interval = setInterval(() => {
@@ -83,7 +127,6 @@ export default function Home() {
     setOfertas([]);
   };
 
-  // === Simulación del viaje ===
   const iniciarViaje = () => {
     const ruta = viaje.directions.routes[0].overview_path;
     let i = 0;
@@ -112,10 +155,8 @@ export default function Home() {
     setViaje((v) => ({ ...v, estado: "finalizado" }));
   };
 
-  // === Guardar viaje en historial ===
   const guardarHistorial = () => {
-    const guardados =
-      JSON.parse(localStorage.getItem("viajesColibri")) || [];
+    const guardados = JSON.parse(localStorage.getItem("viajesColibri")) || [];
     const nuevo = {
       id: Date.now(),
       origen: `${viaje.origen?.lat?.toFixed(4)}, ${viaje.origen?.lng?.toFixed(4)}`,
@@ -150,24 +191,24 @@ export default function Home() {
     }, 2000);
   };
 
-  // === Render ===
   return (
     <div className="home-container">
       <div className="home-box">
         <h1 className="home-title">Huitzilin</h1>
 
         <section className="map-section">
-          <MapaRutas
-            onSelect={handleSelect}
-            marcadorConductor={posicionConductor}
-          />
+          <MapaRutas onSelect={handleSelect} marcadorConductor={posicionConductor} />
         </section>
 
         {viaje.directions && (
           <>
             <div className="trip-miniinfo">
-              <p><strong>Distancia:</strong> {viaje.distancia}</p>
-              <p><strong>Duración:</strong> {viaje.duracion}</p>
+              <p>
+                <strong>Distancia:</strong> {viaje.distancia}
+              </p>
+              <p>
+                <strong>Duración:</strong> {viaje.duracion}
+              </p>
             </div>
 
             <div className="trip-card">
@@ -184,15 +225,21 @@ export default function Home() {
 
               {viaje.estado === "buscando" && (
                 <div>
-                  <p className="buscando-titulo">🔍 Buscando conductores disponibles...</p>
+                  <p className="buscando-titulo">
+                    🔍 Buscando conductores disponibles...
+                  </p>
                   <div className="ofertas-lista compacta">
                     {ofertas.map((o) => (
                       <div key={o.id} className="oferta-card compacta">
                         <div className="oferta-info">
                           <h3>{o.nombre}</h3>
-                          <p>⭐ {o.rating} · {o.tiempo}</p>
+                          <p>
+                            ⭐ {o.rating} · {o.tiempo}
+                          </p>
                           <p className="auto">{o.auto}</p>
-                          <p className="oferta-timer">⏳ {o.restante}s restantes</p>
+                          <p className="oferta-timer">
+                            ⏳ {o.restante}s restantes
+                          </p>
                         </div>
                         <div className="oferta-precio">
                           <span>${o.precio}</span>
@@ -212,7 +259,8 @@ export default function Home() {
               {viaje.estado === "asignado" && (
                 <div className="viaje-actual">
                   <p>
-                    Conductor asignado: <strong>{viaje.conductor?.nombre}</strong> ⭐{" "}
+                    Conductor asignado:{" "}
+                    <strong>{viaje.conductor?.nombre}</strong> ⭐{" "}
                     {viaje.conductor?.rating}
                   </p>
                   <button
@@ -252,7 +300,6 @@ export default function Home() {
                 </div>
               )}
 
-              {/* === POST-VIAJE === */}
               {viaje.estado === "finalizado" && !enviado && (
                 <div className="viaje-actual finalizado">
                   <p>✅ Viaje finalizado con éxito.</p>
