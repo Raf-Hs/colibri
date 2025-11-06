@@ -1,16 +1,20 @@
 import { useState, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 import MapaRutas from "../components/MapaRuta";
 import "./Home.css";
+
+// Conecta al backend (ajusta a tu dominio si no es local)
+const socket = io("https://colibri-backend-od5b.onrender.com");
 
 export default function Home() {
   const rol = localStorage.getItem("rol") || "viajero"; // "conductor" o "viajero"
 
-  // 🔹 Log del tipo de usuario al entrar
+  // 🔹 Log de rol al entrar
   useEffect(() => {
     console.log(`🟢 Usuario autenticado como: ${rol.toUpperCase()}`);
   }, [rol]);
 
-  const [activo, setActivo] = useState(false); // solo para conductores
+  const [activo, setActivo] = useState(false); // solo conductores
   const [viaje, setViaje] = useState({
     origen: null,
     destino: null,
@@ -39,6 +43,52 @@ export default function Home() {
     return (base + km * porKm).toFixed(2);
   };
   const costo = calcularCosto();
+
+  // === CONEXIÓN SOCKET.IO ===
+  useEffect(() => {
+    if (!socket) return;
+
+    // 🔹 Cuando un conductor se activa
+    if (rol === "conductor" && activo) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const datosConductor = {
+          id: localStorage.getItem("userEmail"),
+          nombre: localStorage.getItem("userEmail"),
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
+        console.log("🚗 Enviando conductor_activo:", datosConductor);
+        socket.emit("conductor_activo", datosConductor);
+      });
+    }
+
+    // 🔹 Escucha de viajes nuevos (solo conductores)
+    socket.on("nuevo_viaje", (viaje) => {
+      console.log("🟡 Nuevo viaje disponible:", viaje);
+      alert("📢 Nuevo viaje disponible cerca de ti");
+    });
+
+    // 🔹 Escucha de ofertas (solo viajeros)
+    socket.on("ofertas", (conductores) => {
+      console.log("🚗 Conductores cercanos recibidos:", conductores);
+      setOfertas(
+        conductores.map((c) => ({
+          id: c.id,
+          nombre: c.nombre,
+          rating: 4.8,
+          tiempo: "3 min",
+          auto: "Vehículo disponible",
+          precio: calcularCosto(),
+          restante: 10,
+        }))
+      );
+    });
+
+    return () => {
+      socket.off("nuevo_viaje");
+      socket.off("ofertas");
+    };
+  }, [rol, activo]);
 
   // === MODO CONDUCTOR ===
   if (rol === "conductor") {
@@ -79,33 +129,21 @@ export default function Home() {
 
   // === MODO VIAJERO ===
   const solicitarViaje = () => {
-    if (!viaje.directions) return;
+    if (!viaje.directions || !viaje.origen) return;
     setViaje((v) => ({ ...v, estado: "buscando" }));
     setOfertas([]);
-    setTimeout(() => {
-      setOfertas([
-        {
-          id: 1,
-          nombre: "Carlos M.",
-          rating: 4.8,
-          tiempo: "3 min",
-          auto: "Nissan Versa gris • QRO-123",
-          precio: costo,
-          restante: 10,
-        },
-        {
-          id: 2,
-          nombre: "Laura R.",
-          rating: 4.6,
-          tiempo: "5 min",
-          auto: "Chevrolet Aveo blanco • QRO-782",
-          precio: (costo * 1.1).toFixed(2),
-          restante: 10,
-        },
-      ]);
-    }, 1500);
+
+    // 🔹 Enviar búsqueda de conductores cercanos
+    socket.emit("buscar_conductor", {
+      origen: viaje.origen,
+      destino: viaje.destino,
+      distancia: viaje.distancia,
+    });
+
+    console.log("📡 Solicitando conductores cercanos...");
   };
 
+  // Temporizador para ofertas
   useEffect(() => {
     if (viaje.estado !== "buscando" || ofertas.length === 0) return;
     const interval = setInterval(() => {
@@ -191,6 +229,7 @@ export default function Home() {
     }, 2000);
   };
 
+  // === RENDER GENERAL (VIAJERO) ===
   return (
     <div className="home-container">
       <div className="home-box">
@@ -203,12 +242,8 @@ export default function Home() {
         {viaje.directions && (
           <>
             <div className="trip-miniinfo">
-              <p>
-                <strong>Distancia:</strong> {viaje.distancia}
-              </p>
-              <p>
-                <strong>Duración:</strong> {viaje.duracion}
-              </p>
+              <p><strong>Distancia:</strong> {viaje.distancia}</p>
+              <p><strong>Duración:</strong> {viaje.duracion}</p>
             </div>
 
             <div className="trip-card">
@@ -225,28 +260,19 @@ export default function Home() {
 
               {viaje.estado === "buscando" && (
                 <div>
-                  <p className="buscando-titulo">
-                    🔍 Buscando conductores disponibles...
-                  </p>
+                  <p className="buscando-titulo">🔍 Buscando conductores disponibles...</p>
                   <div className="ofertas-lista compacta">
                     {ofertas.map((o) => (
                       <div key={o.id} className="oferta-card compacta">
                         <div className="oferta-info">
                           <h3>{o.nombre}</h3>
-                          <p>
-                            ⭐ {o.rating} · {o.tiempo}
-                          </p>
+                          <p>⭐ {o.rating} · {o.tiempo}</p>
                           <p className="auto">{o.auto}</p>
-                          <p className="oferta-timer">
-                            ⏳ {o.restante}s restantes
-                          </p>
+                          <p className="oferta-timer">⏳ {o.restante}s restantes</p>
                         </div>
                         <div className="oferta-precio">
                           <span>${o.precio}</span>
-                          <button
-                            className="btn-estado verde"
-                            onClick={() => aceptarOferta(o)}
-                          >
+                          <button className="btn-estado verde" onClick={() => aceptarOferta(o)}>
                             Aceptar
                           </button>
                         </div>
@@ -258,16 +284,8 @@ export default function Home() {
 
               {viaje.estado === "asignado" && (
                 <div className="viaje-actual">
-                  <p>
-                    Conductor asignado:{" "}
-                    <strong>{viaje.conductor?.nombre}</strong> ⭐{" "}
-                    {viaje.conductor?.rating}
-                  </p>
-                  <button
-                    className="btn-estado verde"
-                    onClick={iniciarViaje}
-                    style={{ marginTop: "0.8rem" }}
-                  >
+                  <p>Conductor asignado: <strong>{viaje.conductor?.nombre}</strong> ⭐ {viaje.conductor?.rating}</p>
+                  <button className="btn-estado verde" onClick={iniciarViaje} style={{ marginTop: "0.8rem" }}>
                     Iniciar viaje
                   </button>
                 </div>
@@ -275,10 +293,7 @@ export default function Home() {
 
               {viaje.estado === "en-curso" && (
                 <div className="viaje-actual">
-                  <p>
-                    🚗 En curso con {viaje.conductor?.nombre} ·{" "}
-                    {viaje.tiempoRestante || viaje.duracion} min restantes
-                  </p>
+                  <p>🚗 En curso con {viaje.conductor?.nombre} · {viaje.tiempoRestante || viaje.duracion} min restantes</p>
                   <div className="progreso-barra">
                     <div
                       style={{
@@ -290,11 +305,7 @@ export default function Home() {
                       }}
                     ></div>
                   </div>
-                  <button
-                    className="btn-estado verde"
-                    onClick={finalizarViaje}
-                    style={{ marginTop: "0.8rem" }}
-                  >
+                  <button className="btn-estado verde" onClick={finalizarViaje} style={{ marginTop: "0.8rem" }}>
                     Finalizar viaje
                   </button>
                 </div>
@@ -303,9 +314,7 @@ export default function Home() {
               {viaje.estado === "finalizado" && !enviado && (
                 <div className="viaje-actual finalizado">
                   <p>✅ Viaje finalizado con éxito.</p>
-                  <p style={{ marginTop: "0.6rem", fontWeight: "600" }}>
-                    Valora tu experiencia
-                  </p>
+                  <p style={{ marginTop: "0.6rem", fontWeight: "600" }}>Valora tu experiencia</p>
 
                   <div className="estrellas">
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -332,12 +341,7 @@ export default function Home() {
                     style={{ marginTop: "0.6rem", height: "80px", resize: "none" }}
                   />
 
-                  <button
-                    className="home-button"
-                    style={{ marginTop: "0.6rem" }}
-                    onClick={enviarReseña}
-                    disabled={calificacion === 0}
-                  >
+                  <button className="home-button" style={{ marginTop: "0.6rem" }} onClick={enviarReseña} disabled={calificacion === 0}>
                     Enviar reseña
                   </button>
                 </div>
