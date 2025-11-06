@@ -11,7 +11,6 @@ export default function Login() {
   const [showQR, setShowQR] = useState(false);
   const navigate = useNavigate();
 
-  // === LOGIN DESARROLLO ===
   const devLogin = async () => {
     setLoading(true);
     setError("");
@@ -21,13 +20,12 @@ export default function Login() {
       setQr(fakeQR);
       setShowQR(true);
     } catch (err) {
-      setError("Error en modo desarrollador", err);
+      setError("Error en modo desarrollador");
     } finally {
       setLoading(false);
     }
   };
 
-  // === LOGIN REAL ===
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -43,11 +41,10 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Credenciales inválidas ❌");
+        setError(data.message || "Credenciales inválidas");
         return;
       }
 
-      // Si requiere 2FA
       if (data.require2FA) {
         const qrRes = await fetch(
           `https://colibri-backend-od5b.onrender.com/auth/generate-2fa/${email}`
@@ -58,7 +55,6 @@ export default function Login() {
         return;
       }
 
-      // 🔹 Guardar sesión y rol
       localStorage.setItem("token", data.token);
       localStorage.setItem("rol", data.rol || "viajero");
       localStorage.setItem("userEmail", email);
@@ -66,19 +62,15 @@ export default function Login() {
       navigate("/home");
     } catch (err) {
       console.error(err);
-      setError("Error al conectar con el servidor 🚨");
+      setError("Error al conectar con el servidor");
     } finally {
       setLoading(false);
     }
   };
 
-  // === CIERRE DEL QR (Simula que ya escaneó) ===
-  // === CIERRE DEL QR (Simula que ya escaneó) ===
   const closeQR = () => {
     setShowQR(false);
-    alert("✅ Escanea el código QR en Google Authenticator para activar 2FA.");
-
-    // 🔹 Simulación de sesión: si el correo contiene 'driver', será conductor
+    
     const rolSimulado = email.toLowerCase().includes("driver")
       ? "conductor"
       : "viajero";
@@ -90,12 +82,11 @@ export default function Login() {
     navigate("/home");
   };
 
-
   return (
     <div className="login-container">
       <div className="login-box">
         <div className="login-header">
-          <img src="/icons/icon-192x192.png" alt="Colibrí logo" className="login-logo" />
+          <img src="/src/assets/Logo.png" alt="Colibrí logo" className="login-logo" />
           <h1 className="login-title">Inicia sesión</h1>
           <h2 className="login-subtitle">Bienvenido a Huitzilin</h2>
         </div>
@@ -138,32 +129,23 @@ export default function Login() {
           </div>
         </div>
 
-        <button
-          onClick={devLogin}
-          className="login-dev-button"
-          style={{
-            marginTop: "1.5rem",
-            fontSize: "0.85rem",
-            background: "transparent",
-            color: "#999",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={devLogin} className="login-dev-button">
           Modo desarrollador
         </button>
       </div>
 
-      {/* === OVERLAY QR === */}
       {showQR && (
         <div className="qr-overlay">
           <div className="qr-modal">
             <h2>Configura tu verificación 2FA</h2>
             <p>Escanea este código en Google Authenticator o Authy:</p>
-            <img src={qr} alt="QR 2FA" className="qr-image" />
-            <p className="qr-info">
+            
+            {qr && <img src={qr} alt="QR 2FA" className="qr-image" />}
+            
+            <p style={{fontSize: '0.85rem', color: '#6c757d', marginTop: '1rem'}}>
               Una vez escaneado, podrás generar códigos seguros de acceso.
             </p>
+            
             <button onClick={closeQR} className="qr-close">
               Listo
             </button>

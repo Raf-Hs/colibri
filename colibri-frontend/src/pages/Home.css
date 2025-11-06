@@ -14,20 +14,19 @@
   background: white;
   padding: 2rem;
   border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(40, 167, 69, 0.12);
+  box-shadow: 0 8px 32px rgba(12, 37, 48, 0.12);
   box-sizing: border-box;
   overflow: hidden;
 }
 
 .home-title {
   text-align: center;
-  color: #28a745;
+  color: #2B9C93;
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
 }
 
-/* === CONTENEDOR MAPA UNIFICADO === */
 .map-section {
   background: #ffffff;
   border-radius: 16px;
@@ -37,7 +36,6 @@
   border: 1px solid #eaeaea;
 }
 
-/* Elimina el borde doble interno */
 .map-wrapper {
   margin: 0;
   padding: 0;
@@ -46,7 +44,6 @@
   box-shadow: none;
 }
 
-/* Inputs completamente dentro del borde */
 .inputs-mapa {
   display: flex;
   flex-direction: column;
@@ -60,17 +57,22 @@
   border: 1.8px solid #e0e0e0;
   border-radius: 10px;
   font-size: 0.95rem;
-  background: #fafafa;
+  background: white;
+  color: #495057;
   transition: all 0.2s ease;
 }
 
 .map-input:focus {
-  border-color: #28a745;
-  background: #fff;
-  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.15);
+  border-color: #2B9C93;
+  background: white;
+  box-shadow: 0 0 0 2px rgba(43, 156, 147, 0.15);
+  color: #212529;
 }
 
-/* Ajusta mapa y botón GPS */
+.map-input::placeholder {
+  color: #adb5bd;
+}
+
 .map-container {
   position: relative;
   height: 46vh;
@@ -84,29 +86,34 @@
   position: absolute;
   right: 10px;
   bottom: 10px;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: #fff;
+  background: white;
   border: none;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  color: #2B9C93;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
   font-size: 1.2rem;
-  transition: transform 0.2s ease;
 }
 
 .gps-fab:hover {
   transform: scale(1.05);
+  background: #2B9C93;
+  color: white;
 }
 
-/* Mini-info más compacta debajo del mapa */
 .trip-miniinfo {
   display: flex;
   justify-content: center;
   gap: 1.5rem;
   background: #f8fdf9;
   border-radius: 10px;
-  padding: 0.4rem 0.8rem;
+  padding: 0.8rem 1rem;
   margin: 0.6rem auto 1rem;
   font-size: 0.85rem;
   color: #495057;
@@ -119,12 +126,11 @@
   font-weight: 500;
 }
 
-/* ===== TARJETA DE VIAJE ===== */
 .trip-card {
   background: white;
   border-radius: 16px;
   padding: 1.2rem 1.5rem;
-  box-shadow: 0 8px 24px rgba(40, 167, 69, 0.12);
+  box-shadow: 0 8px 24px rgba(43, 156, 147, 0.12);
   margin-top: 1rem;
   animation: fadeIn 0.4s ease-out;
 }
@@ -150,7 +156,7 @@
 .trip-price {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #28a745;
+  color: #2B9C93;
 }
 
 .trip-label {
@@ -158,9 +164,8 @@
   color: #6c757d;
 }
 
-/* ===== BOTÓN ===== */
 .home-button {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background: linear-gradient(135deg, #2B9C93 0%, #4EC6C0 100%);
   color: white;
   border: none;
   padding: 1rem;
@@ -170,35 +175,33 @@
   font-size: 1.1rem;
   width: 100%;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 4px 12px rgba(43, 156, 147, 0.3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .home-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+  box-shadow: 0 6px 20px rgba(43, 156, 147, 0.4);
 }
 
-/* ===== ESTADOS DEL VIAJE ===== */
 .viaje-actual {
   background: #f1fff4;
   border-radius: 12px;
   padding: 1rem;
   text-align: center;
   font-weight: 500;
-  color: #2e7d32;
-  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.15);
+  color: #2B9C93;
+  box-shadow: 0 4px 10px rgba(43, 156, 147, 0.15);
 }
 
 .viaje-actual.finalizado {
   background: #e9f7ef;
-  color: #28a745;
+  color: #2B9C93;
 }
 
-/* ===== BOTÓN DE ESTADO ===== */
 .btn-estado.verde {
-  background: linear-gradient(135deg, #28A745 0%, #20c997 100%);
+  background: linear-gradient(135deg, #2B9C93 0%, #4EC6C0 100%);
   border: none;
   color: white;
   padding: 0.8rem 1rem;
@@ -211,10 +214,9 @@
 
 .btn-estado.verde:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+  box-shadow: 0 6px 16px rgba(43, 156, 147, 0.4);
 }
 
-/* ===== ANIMACIONES ===== */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -225,36 +227,6 @@
     transform: translateY(0);
   }
 }
-/* === OFERTAS DE CONDUCTORES === */
-.ofertas-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  margin-top: 0.5rem;
-}
-
-.oferta-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8fdf9;
-  border-radius: 12px;
-  padding: 0.8rem 1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.oferta-info h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #212529;
-}
-
-.oferta-info p {
-  margin: 0.2rem 0 0;
-  color: #495057;
-  font-size: 0.9rem;
-}
-
 
 .ofertas-lista.compacta {
   display: flex;
@@ -269,7 +241,7 @@
   align-items: center;
   background: #f8fdf9;
   border-radius: 10px;
-  padding: 0.6rem 0.8rem;
+  padding: 0.8rem;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   font-size: 0.9rem;
 }
@@ -300,13 +272,14 @@
   display: block;
   font-weight: 700;
   font-size: 1rem;
-  color: #28a745;
+  color: #2B9C93;
   margin-bottom: 0.3rem;
 }
 
 .buscando-titulo {
   text-align: center;
   font-weight: 600;
+  color: #2B9C93;
 }
 
 .buscando-texto {
@@ -314,26 +287,36 @@
   color: #6c757d;
   margin-top: 0.5rem;
 }
+
 .estrellas {
   display: flex;
   justify-content: center;
   gap: 0.3rem;
-  margin-top: 0.4rem;
+  margin: 0.5rem 0;
 }
 
 .progreso-barra {
   width: 100%;
-  height: 10px;
+  height: 8px;
   background: #e9ecef;
-  border-radius: 6px;
-  margin-top: 0.5rem;
+  border-radius: 4px;
+  margin: 0.8rem 0;
   overflow: hidden;
 }
+
+.progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2B9C93, #4EC6C0);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
 .oferta-info .auto {
   color: #6c757d;
   font-size: 0.85rem;
   margin-top: 0.1rem;
 }
+
 .reseña-input {
   width: 100%;
   min-height: 80px;
@@ -343,29 +326,40 @@
   font-size: 0.95rem;
   resize: none;
   margin: 0.8rem 0 1rem;
-  background: #fafafa;
+  background: white;
+  color: #495057;
   transition: all 0.3s ease;
 }
 
 .reseña-input:focus {
   outline: none;
-  border-color: #28a745;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
-}
-.estrellas {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  gap: 0.3rem;
+  border-color: #2B9C93;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(43, 156, 147, 0.1);
+  color: #212529;
 }
 
 .estrellas span {
-  user-select: none;
+  cursor: pointer;
   transition: transform 0.15s ease;
+  color: #FFB38A;
+  font-size: 2rem;
 }
 
 .estrellas span:hover {
   transform: scale(1.2);
+}
+
+.estrellas span.activa {
+  color: #F48C64;
+}
+
+.ubicacion-actual {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #495057;
+  border-left: 3px solid #2B9C93;
 }

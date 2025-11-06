@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Register.css";
+import "./RegisterConductor.css";
 
 export default function RegisterConductor() {
   const [form, setForm] = useState({
@@ -47,7 +47,6 @@ export default function RegisterConductor() {
     setLoading(true);
 
     try {
-      // Paso 1: registro básico del conductor
       const res = await fetch("https://colibri-backend-od5b.onrender.com/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,17 +60,6 @@ export default function RegisterConductor() {
         setLoading(false);
         return;
       }
-
-      // Paso 2: (futuro) subida de documentos
-      // const formData = new FormData();
-      // Object.entries(docs).forEach(([key, value]) => {
-      //   if (Array.isArray(value)) value.forEach((f) => formData.append(key, f));
-      //   else if (value) formData.append(key, value);
-      // });
-      // await fetch("https://colibri-backend-od5b.onrender.com/auth/upload-docs", {
-      //   method: "POST",
-      //   body: formData,
-      // });
 
       alert("✅ Registro exitoso. En breve revisaremos tu documentación.");
       navigate("/");
@@ -87,7 +75,7 @@ export default function RegisterConductor() {
     <div className="register-container">
       <div className="register-box">
         <div className="register-header">
-          <img src="/icons/icon-192x192.png" alt="logo" className="register-logo" />
+          <img src="/src/assets/Logo.png" alt="logo" className="register-logo" />
           <h1 className="register-title">Registro de Conductor</h1>
           <h2 className="register-subtitle">
             Conduce con Huitzilin y genera ingresos
@@ -97,7 +85,6 @@ export default function RegisterConductor() {
         {error && <div className="register-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="register-form" autoComplete="off">
-          {/* Datos personales */}
           <input
             type="text"
             name="nombre"
@@ -138,38 +125,53 @@ export default function RegisterConductor() {
             className="register-input"
           />
 
-          {/* Documentación obligatoria */}
-          <h3 style={{ textAlign: "left", color: "#28A745", marginTop: "1.2rem" }}>
-            Documentación obligatoria
-          </h3>
+          <div className="documentacion-section">
+            <h3 className="documentacion-title">
+              Documentación obligatoria
+            </h3>
 
-          <label className="form-label">Identificación oficial (INE, pasaporte o licencia)</label>
-          <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "identificacion")} required />
+            <label className="form-label required">
+              Identificación oficial (INE, pasaporte o licencia)
+            </label>
+            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "identificacion")} required />
 
-          <label className="form-label">Licencia de conducir vigente</label>
-          <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "licencia")} required />
+            <label className="form-label required">
+              Licencia de conducir vigente
+            </label>
+            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "licencia")} required />
 
-          <label className="form-label">Póliza de seguro del vehículo</label>
-          <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "poliza")} required />
+            <label className="form-label required">
+              Póliza de seguro del vehículo
+            </label>
+            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "poliza")} required />
 
-          <label className="form-label">Comprobante de domicilio (≤ 3 meses)</label>
-          <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "domicilio")} required />
+            <label className="form-label required">
+              Comprobante de domicilio (≤ 3 meses)
+            </label>
+            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "domicilio")} required />
 
-          <label className="form-label">Fotografías del vehículo (frontal, trasera, lateral e interior)</label>
-          <input type="file" multiple accept="image/*" onChange={(e) => handleFile(e, "vehiculoFotos", true)} required />
+            <label className="form-label required">
+              Fotografías del vehículo (frontal, trasera, lateral e interior)
+            </label>
+            <input type="file" multiple accept="image/*" onChange={(e) => handleFile(e, "vehiculoFotos", true)} required />
 
-          <div className="preview-grid">
-            {preview.vehiculoFotos &&
-              preview.vehiculoFotos.map((src, i) => (
-                <img key={i} src={src} className="preview-img" alt={`vehiculo-${i}`} />
-              ))}
+            <div className="preview-grid">
+              {preview.vehiculoFotos &&
+                preview.vehiculoFotos.map((src, i) => (
+                  <img key={i} src={src} className="preview-img" alt={`vehiculo-${i}`} />
+                ))}
+            </div>
+
+            <label className="form-label required">
+              Fotografía del conductor
+            </label>
+            <input type="file" accept="image/*" onChange={(e) => handleFile(e, "fotoConductor")} required />
+
+            <label className="form-label">
+              Acreditación municipal o estatal (si aplica)
+            </label>
+            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "acreditacionTaxi")} />
           </div>
-
-          <label className="form-label">Fotografía del conductor</label>
-          <input type="file" accept="image/*" onChange={(e) => handleFile(e, "fotoConductor")} required />
-
-          <label className="form-label">Acreditación municipal o estatal (si aplica)</label>
-          <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "acreditacionTaxi")} />
 
           <button type="submit" className="register-button" disabled={loading}>
             {loading ? "Registrando..." : "REGISTRARSE COMO CONDUCTOR"}

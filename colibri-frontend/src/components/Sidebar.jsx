@@ -48,8 +48,13 @@ export default function Sidebar() {
       {/* === SIDEBAR === */}
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <div className="sidebar-header">
+          <img 
+            src="/src/assets/Logo.png" 
+            alt="Huitzilin Logo" 
+            className="sidebar-logo-img"
+          />
           <h2 className="sidebar-logo">
-            🕊️ <span>Huitzilin</span>
+            <span>Huitzilin</span>
           </h2>
           <button className="close-btn" onClick={() => setOpen(false)}>
             ✕
@@ -62,7 +67,8 @@ export default function Sidebar() {
             className={location.pathname === "/home" ? "active" : ""}
             onClick={() => setOpen(false)}
           >
-            🏠 Inicio
+            <span className="nav-icon">🏠</span>
+            Inicio
           </Link>
 
           <Link
@@ -70,11 +76,13 @@ export default function Sidebar() {
             className={location.pathname === "/historial" ? "active" : ""}
             onClick={() => setOpen(false)}
           >
-            📋 Historial
+            <span className="nav-icon">📋</span>
+            Historial
           </Link>
 
           <button className="logout-btn" onClick={cerrarSesion}>
-            🚪 Cerrar sesión
+            <span className="nav-icon">🚪</span>
+            Cerrar sesión
           </button>
         </nav>
       </aside>

@@ -16,7 +16,7 @@
   background: white;
   padding: 2rem;
   border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(40, 167, 69, 0.12);
+  box-shadow: 0 8px 32px rgba(12, 37, 48, 0.12);
   animation: fadeIn 0.5s ease-out;
 }
 
@@ -34,13 +34,17 @@
 /* Título mejorado */
 .historial-title {
   text-align: center;
-  color: #28A745;
+  color: #2B9C93;
   font-size: 1.85rem;
   font-weight: 700;
   margin-bottom: 2rem;
   letter-spacing: -0.5px;
   position: relative;
   padding-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .historial-title::after {
@@ -51,7 +55,7 @@
   transform: translateX(-50%);
   width: 60px;
   height: 4px;
-  background: linear-gradient(90deg, #28A745, #20c997);
+  background: linear-gradient(90deg, #2B9C93, #4EC6C0);
   border-radius: 2px;
 }
 
@@ -62,10 +66,14 @@
   font-size: 1.1rem;
   padding: 3rem 1rem;
   animation: fadeIn 0.6s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .historial-empty::before {
-  content: '📋';
+  content: '';
   display: block;
   font-size: 4rem;
   margin-bottom: 1rem;
@@ -114,10 +122,10 @@
 .historial-item:nth-child(5) { animation-delay: 0.3s; }
 
 .historial-item:hover {
-  border-color: #28A745;
+  border-color: #2B9C93;
   background: white;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.15);
+  box-shadow: 0 6px 20px rgba(43, 156, 147, 0.15);
 }
 
 .historial-item::before {
@@ -127,7 +135,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: linear-gradient(180deg, #28A745, #20c997);
+  background: linear-gradient(180deg, #2B9C93, #4EC6C0);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -142,6 +150,9 @@
   font-size: 1rem;
   color: #343a40;
   line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .historial-item p:first-child {
@@ -157,7 +168,9 @@
 
 /* Estados con diseño moderno */
 .estado {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-left: 0.75rem;
   padding: 0.35rem 0.85rem;
   border-radius: 20px;
@@ -171,23 +184,23 @@
 
 /* Estados con colores mejorados */
 .estado.pendiente {
-  background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
+  background: linear-gradient(135deg, #FFB38A 0%, #F48C64 100%);
   color: #5d4037;
 }
 
 .estado.en\ curso,
 .estado.en-curso {
-  background: linear-gradient(135deg, #007BFF 0%, #0056b3 100%);
+  background: linear-gradient(135deg, #4EC6C0 0%, #2B9C93 100%);
   color: white;
 }
 
 .estado.finalizado {
-  background: linear-gradient(135deg, #28A745 0%, #20c997 100%);
+  background: linear-gradient(135deg, #6CCB7E 0%, #4EC6C0 100%);
   color: white;
 }
 
 .estado.cancelado {
-  background: linear-gradient(135deg, #DC3545 0%, #c82333 100%);
+  background: linear-gradient(135deg, #F48C64 0%, #dc3545 100%);
   color: white;
 }
 
@@ -195,14 +208,13 @@
   transform: scale(1.05);
 }
 
-/* Icono de estado (opcional - agregar con pseudo-elemento) */
+/* Icono de estado */
 .estado::before {
   content: '';
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-right: 0.5rem;
   background: currentColor;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -221,14 +233,14 @@
   }
 }
 
-/* Botón de acción (opcional - si agregas botones) */
+/* Botón de acción */
 .historial-action {
   margin-top: 1.5rem;
   text-align: center;
 }
 
 .historial-button {
-  background: linear-gradient(135deg, #28A745 0%, #20c997 100%);
+  background: linear-gradient(135deg, #2B9C93 0%, #4EC6C0 100%);
   color: white;
   padding: 0.75rem 2rem;
   border: none;
@@ -237,12 +249,17 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 4px 12px rgba(43, 156, 147, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 auto;
 }
 
 .historial-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+  box-shadow: 0 6px 20px rgba(43, 156, 147, 0.4);
 }
 
 .historial-button:active {
@@ -278,7 +295,7 @@
   }
 }
 
-/* Loading skeleton (opcional - para cuando carga) */
+/* Loading skeleton */
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -298,4 +315,23 @@
   background-size: 1000px 100%;
   animation: shimmer 2s infinite;
   pointer-events: none;
+}
+
+.calificacion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.estrellas-historial {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.estrella {
+  color: #FFB38A;
+}
+
+.estrella.activa {
+  color: #F48C64;
 }

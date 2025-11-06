@@ -1,5 +1,4 @@
-/* Splash Screen - Pantalla completa absoluta */
-.splash-screen {
+.splash-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -7,31 +6,12 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Para móviles */
-  background: linear-gradient(135deg, #15803d 0%, #10b981 50%, #14b8a6 100%);
+  background: linear-gradient(135deg, #0C2530 0%, #123D4B 50%, #112E38 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   z-index: 9999;
-}
-
-/* Ondas de color en cascada */
-@keyframes wave-cascade {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.8;
-  }
-  90% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(120vh);
-    opacity: 0;
-  }
 }
 
 .wave-overlay {
@@ -46,92 +26,44 @@
   width: 100%;
   height: 150%;
   border-radius: 0 0 50% 50%;
+  opacity: 0;
+  animation: wave-cascade 4s ease-in-out infinite;
 }
 
-/* Verde más oscuro - Primera onda */
 .wave:nth-child(1) {
-  background: linear-gradient(180deg, 
-    rgba(21, 128, 61, 0.5) 0%,
-    rgba(22, 163, 74, 0.4) 30%,
-    rgba(34, 197, 94, 0.3) 60%,
-    transparent 100%
-  );
-  animation: wave-cascade 3.5s ease-in-out;
+  background: linear-gradient(180deg, rgba(43, 156, 147, 0.3) 0%, transparent 100%);
   animation-delay: 0s;
 }
 
-/* Verde medio-oscuro - Segunda onda */
 .wave:nth-child(2) {
-  background: linear-gradient(180deg, 
-    rgba(22, 163, 74, 0.5) 0%,
-    rgba(34, 197, 94, 0.4) 30%,
-    rgba(74, 222, 128, 0.3) 60%,
-    transparent 100%
-  );
-  animation: wave-cascade 3.5s ease-in-out;
-  animation-delay: 0.4s;
+  background: linear-gradient(180deg, rgba(78, 198, 192, 0.25) 0%, transparent 100%);
+  animation-delay: 1s;
 }
 
-/* Verde medio - Tercera onda */
 .wave:nth-child(3) {
-  background: linear-gradient(180deg, 
-    rgba(34, 197, 94, 0.5) 0%,
-    rgba(74, 222, 128, 0.4) 30%,
-    rgba(134, 239, 172, 0.3) 60%,
-    transparent 100%
-  );
-  animation: wave-cascade 3.5s ease-in-out;
-  animation-delay: 0.8s;
+  background: linear-gradient(180deg, rgba(108, 203, 126, 0.2) 0%, transparent 100%);
+  animation-delay: 2s;
 }
 
-/* Verde claro - Cuarta onda */
 .wave:nth-child(4) {
-  background: linear-gradient(180deg, 
-    rgba(74, 222, 128, 0.5) 0%,
-    rgba(134, 239, 172, 0.4) 30%,
-    rgba(187, 247, 208, 0.3) 60%,
-    transparent 100%
-  );
-  animation: wave-cascade 3.5s ease-in-out;
-  animation-delay: 1.2s;
+  background: linear-gradient(180deg, rgba(148, 224, 180, 0.15) 0%, transparent 100%);
+  animation-delay: 3s;
 }
 
-/* Círculos decorativos */
-@keyframes pulse-soft {
-  0%, 100% {
-    opacity: 0.2;
-    transform: scale(1);
+@keyframes wave-cascade {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
   }
   50% {
-    opacity: 0.4;
-    transform: scale(1.08);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
   }
 }
 
-.splash-circle {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  filter: blur(60px);
-  animation: pulse-soft 3s ease-in-out infinite;
-}
-
-.splash-circle-1 {
-  width: 300px;
-  height: 300px;
-  top: 10%;
-  left: 10%;
-}
-
-.splash-circle-2 {
-  width: 400px;
-  height: 400px;
-  bottom: 10%;
-  right: 10%;
-  animation-delay: 0.7s;
-}
-
-/* Contenido principal */
 .splash-content {
   position: relative;
   z-index: 10;
@@ -143,7 +75,11 @@
   justify-content: center;
 }
 
-/* Logo con animación */
+.splash-logo-container {
+  margin-bottom: 2rem;
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
 @keyframes bounce-slow {
   0%, 100% {
     transform: scale(1);
@@ -153,49 +89,30 @@
   }
 }
 
-.splash-logo-container {
-  margin-bottom: 2rem;
-  animation: bounce-slow 2s ease-in-out infinite;
-}
-
 .splash-logo {
-  font-size: 120px;
-  line-height: 1;
-  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
-}
-
-/* Título */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  width: 120px;
+  height: 120px;
+  border-radius: 24px;
+  object-fit: cover;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
 }
 
 .splash-title {
-  font-size: 4rem;
+  font-size: 3rem;
   font-weight: 700;
   color: white;
   margin: 0 0 1rem 0;
   letter-spacing: -1px;
-  animation: fade-in 0.8s ease-out 0.5s backwards;
 }
 
-/* Eslogan */
 .splash-subtitle {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 3rem 0;
-  animation: fade-in 0.8s ease-out 0.8s backwards;
 }
 
-/* Barra de carga */
-.splash-loading-bar-container {
+.splash-loading-bar {
   width: 300px;
   max-width: 80vw;
   height: 4px;
@@ -203,6 +120,13 @@
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 2rem;
+}
+
+.splash-loading-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #6CCB7E, #4EC6C0);
+  animation: loading-bar 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes loading-bar {
@@ -214,43 +138,10 @@
   }
 }
 
-@keyframes loading-shine {
-  0% {
-    background-position: -100% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.splash-loading-bar {
-  height: 100%;
-  border-radius: 10px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.7) 0%,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0.7) 100%
-  );
-  background-size: 200% 100%;
-  animation: loading-bar 3s cubic-bezier(0.4, 0, 0.2, 1) forwards, 
-             loading-shine 1.2s ease-in-out infinite;
-}
-
-/* Puntos de carga */
 .splash-dots {
   display: flex;
   gap: 12px;
   justify-content: center;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 
 .splash-dot {
@@ -261,19 +152,19 @@
   animation: bounce 1s ease-in-out infinite;
 }
 
-.splash-dot:nth-child(1) {
-  animation-delay: 0s;
+.splash-dot:nth-child(1) { animation-delay: 0s; }
+.splash-dot:nth-child(2) { animation-delay: 0.15s; }
+.splash-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
-.splash-dot:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.splash-dot:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-/* Versión */
 .splash-version {
   position: absolute;
   bottom: 2rem;
@@ -284,39 +175,11 @@
   font-weight: 500;
 }
 
-/* Responsive - Tablets */
+/* Responsive */
 @media (max-width: 768px) {
   .splash-logo {
-    font-size: 100px;
-  }
-  
-  .splash-title {
-    font-size: 3rem;
-  }
-  
-  .splash-subtitle {
-    font-size: 1.25rem;
-  }
-  
-  .splash-circle-1 {
-    width: 200px;
-    height: 200px;
-  }
-  
-  .splash-circle-2 {
-    width: 250px;
-    height: 250px;
-  }
-}
-
-/* Responsive - Móviles */
-@media (max-width: 480px) {
-  .splash-content {
-    padding: 1rem;
-  }
-  
-  .splash-logo {
-    font-size: 80px;
+    width: 100px;
+    height: 100px;
   }
   
   .splash-title {
@@ -325,83 +188,25 @@
   
   .splash-subtitle {
     font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .splash-logo {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .splash-title {
+    font-size: 2rem;
+  }
+  
+  .splash-subtitle {
+    font-size: 1rem;
     margin-bottom: 2rem;
   }
   
-  .splash-loading-bar-container {
-    width: 250px;
-    margin-bottom: 1.5rem;
-  }
-  
-  .splash-circle-1 {
-    width: 150px;
-    height: 150px;
-  }
-  
-  .splash-circle-2 {
-    width: 180px;
-    height: 180px;
-  }
-}
-
-/* Landscape móviles */
-@media (max-height: 600px) and (orientation: landscape) {
-  .splash-logo {
-    font-size: 60px;
-  }
-  
-  .splash-logo-container {
-    margin-bottom: 1rem;
-  }
-  
-  .splash-title {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .splash-subtitle {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .splash-loading-bar-container {
-    margin-bottom: 1rem;
-  }
-  
-  .splash-version {
-    bottom: 1rem;
-    font-size: 0.8rem;
-  }
-}
-
-/* Accesibilidad - Movimiento reducido */
-@media (prefers-reduced-motion: reduce) {
-  .wave,
-  .splash-logo-container,
-  .splash-circle {
-    animation: none !important;
-  }
-  
   .splash-loading-bar {
-    animation: loading-bar 3s linear forwards !important;
-  }
-  
-  .splash-dot {
-    animation: none !important;
-  }
-}
-
-/* Pantallas muy pequeñas */
-@media (max-width: 360px) {
-  .splash-logo {
-    font-size: 64px;
-  }
-  
-  .splash-title {
-    font-size: 2rem;
-  }
-  
-  .splash-subtitle {
-    font-size: 1rem;
+    width: 250px;
   }
 }

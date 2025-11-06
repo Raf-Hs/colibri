@@ -3,18 +3,25 @@ import { io } from "socket.io-client";
 import MapaRutas from "../components/MapaRuta";
 import "./Home.css";
 
-// Conecta al backend (ajusta a tu dominio si no es local)
 const socket = io("https://colibri-backend-od5b.onrender.com");
 
 export default function Home() {
-  const rol = localStorage.getItem("rol") || "viajero"; // "conductor" o "viajero"
+  const rol = localStorage.getItem("rol") || "viajero";
+  const [ubicacionActual, setUbicacionActual] = useState("");
 
-  // 🔹 Log de rol al entrar
   useEffect(() => {
     console.log(`🟢 Usuario autenticado como: ${rol.toUpperCase()}`);
+    
+    // Obtener ubicación actual
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        setUbicacionActual(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+      });
+    }
   }, [rol]);
 
-  const [activo, setActivo] = useState(false); // solo conductores
+  const [activo, setActivo] = useState(false);
   const [viaje, setViaje] = useState({
     origen: null,
     destino: null,
@@ -44,11 +51,9 @@ export default function Home() {
   };
   const costo = calcularCosto();
 
-  // === CONEXIÓN SOCKET.IO ===
   useEffect(() => {
     if (!socket) return;
 
-    // 🔹 Cuando un conductor se activa
     if (rol === "conductor" && activo) {
       navigator.geolocation.getCurrentPosition((pos) => {
         const datosConductor = {
@@ -57,20 +62,15 @@ export default function Home() {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         };
-        console.log("🚗 Enviando conductor_activo:", datosConductor);
         socket.emit("conductor_activo", datosConductor);
       });
     }
 
-    // 🔹 Escucha de viajes nuevos (solo conductores)
     socket.on("nuevo_viaje", (viaje) => {
-      console.log("🟡 Nuevo viaje disponible:", viaje);
       alert("📢 Nuevo viaje disponible cerca de ti");
     });
 
-    // 🔹 Escucha de ofertas (solo viajeros)
     socket.on("ofertas", (conductores) => {
-      console.log("🚗 Conductores cercanos recibidos:", conductores);
       setOfertas(
         conductores.map((c) => ({
           id: c.id,
@@ -90,7 +90,6 @@ export default function Home() {
     };
   }, [rol, activo]);
 
-  // === MODO CONDUCTOR ===
   if (rol === "conductor") {
     return (
       <div className="home-container">
@@ -104,17 +103,17 @@ export default function Home() {
           <div className="trip-card">
             {!activo ? (
               <button className="home-button" onClick={() => setActivo(true)}>
-                🚗 Recibir Viajes
+                Recibir Viajes
               </button>
             ) : (
               <div className="viaje-actual">
                 <p>
-                  ✅ Estado: <strong>Activo</strong>
+                  Estado: <strong>Activo</strong>
                 </p>
                 <p>Esperando solicitudes de viaje...</p>
                 <button
                   className="btn-estado verde"
-                  style={{ background: "#dc3545", marginTop: "0.8rem" }}
+                  style={{ background: "#F48C64" }}
                   onClick={() => setActivo(false)}
                 >
                   Detener
@@ -127,23 +126,18 @@ export default function Home() {
     );
   }
 
-  // === MODO VIAJERO ===
   const solicitarViaje = () => {
     if (!viaje.directions || !viaje.origen) return;
     setViaje((v) => ({ ...v, estado: "buscando" }));
     setOfertas([]);
 
-    // 🔹 Enviar búsqueda de conductores cercanos
     socket.emit("buscar_conductor", {
       origen: viaje.origen,
       destino: viaje.destino,
       distancia: viaje.distancia,
     });
-
-    console.log("📡 Solicitando conductores cercanos...");
   };
 
-  // Temporizador para ofertas
   useEffect(() => {
     if (viaje.estado !== "buscando" || ofertas.length === 0) return;
     const interval = setInterval(() => {
@@ -229,7 +223,18 @@ export default function Home() {
     }, 2000);
   };
 
-  // === RENDER GENERAL (VIAJERO) ===
+  const renderEstrellas = () => {
+    return [1, 2, 3, 4, 5].map((star) => (
+      <span
+        key={star}
+        className={star <= calificacion ? "activa" : ""}
+        onClick={() => setCalificacion(star)}
+      >
+        ★
+      </span>
+    ));
+  };
+
   return (
     <div className="home-container">
       <div className="home-box">
@@ -237,13 +242,23 @@ export default function Home() {
 
         <section className="map-section">
           <MapaRutas onSelect={handleSelect} marcadorConductor={posicionConductor} />
+          
+          {ubicacionActual && (
+            <div className="ubicacion-actual">
+              <span>Tu ubicación: {ubicacionActual}</span>
+            </div>
+          )}
         </section>
 
         {viaje.directions && (
           <>
             <div className="trip-miniinfo">
-              <p><strong>Distancia:</strong> {viaje.distancia}</p>
-              <p><strong>Duración:</strong> {viaje.duracion}</p>
+              <p>
+                <strong>Distancia:</strong> {viaje.distancia}
+              </p>
+              <p>
+                <strong>Duración:</strong> {viaje.duracion}
+              </p>
             </div>
 
             <div className="trip-card">
@@ -260,15 +275,23 @@ export default function Home() {
 
               {viaje.estado === "buscando" && (
                 <div>
-                  <p className="buscando-titulo">🔍 Buscando conductores disponibles...</p>
+                  <p className="buscando-titulo">
+                    Buscando conductores disponibles...
+                  </p>
                   <div className="ofertas-lista compacta">
                     {ofertas.map((o) => (
                       <div key={o.id} className="oferta-card compacta">
                         <div className="oferta-info">
                           <h3>{o.nombre}</h3>
-                          <p>⭐ {o.rating} · {o.tiempo}</p>
-                          <p className="auto">{o.auto}</p>
-                          <p className="oferta-timer">⏳ {o.restante}s restantes</p>
+                          <p>
+                            ⭐ {o.rating} · {o.tiempo}
+                          </p>
+                          <p className="auto">
+                            🚗 {o.auto}
+                          </p>
+                          <p className="oferta-timer">
+                            ⏳ {o.restante}s restantes
+                          </p>
                         </div>
                         <div className="oferta-precio">
                           <span>${o.precio}</span>
@@ -284,7 +307,9 @@ export default function Home() {
 
               {viaje.estado === "asignado" && (
                 <div className="viaje-actual">
-                  <p>Conductor asignado: <strong>{viaje.conductor?.nombre}</strong> ⭐ {viaje.conductor?.rating}</p>
+                  <p>
+                    Conductor asignado: <strong>{viaje.conductor?.nombre}</strong>
+                  </p>
                   <button className="btn-estado verde" onClick={iniciarViaje} style={{ marginTop: "0.8rem" }}>
                     Iniciar viaje
                   </button>
@@ -293,16 +318,13 @@ export default function Home() {
 
               {viaje.estado === "en-curso" && (
                 <div className="viaje-actual">
-                  <p>🚗 En curso con {viaje.conductor?.nombre} · {viaje.tiempoRestante || viaje.duracion} min restantes</p>
+                  <p>
+                    En curso con {viaje.conductor?.nombre} · {viaje.tiempoRestante || viaje.duracion} min restantes
+                  </p>
                   <div className="progreso-barra">
-                    <div
-                      style={{
-                        width: `${viaje.progreso || 0}%`,
-                        height: "10px",
-                        background: "linear-gradient(90deg,#28a745,#20c997)",
-                        borderRadius: "6px",
-                        transition: "width 0.4s ease",
-                      }}
+                    <div 
+                      className="progreso-fill"
+                      style={{ width: `${viaje.progreso || 0}%` }}
                     ></div>
                   </div>
                   <button className="btn-estado verde" onClick={finalizarViaje} style={{ marginTop: "0.8rem" }}>
@@ -313,35 +335,20 @@ export default function Home() {
 
               {viaje.estado === "finalizado" && !enviado && (
                 <div className="viaje-actual finalizado">
-                  <p>✅ Viaje finalizado con éxito.</p>
-                  <p style={{ marginTop: "0.6rem", fontWeight: "600" }}>Valora tu experiencia</p>
-
+                  <p>
+                    Viaje finalizado con éxito.
+                  </p>
+                  <p style={{ marginTop: "0.8rem" }}>¿Cómo fue tu experiencia?</p>
                   <div className="estrellas">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <span
-                        key={n}
-                        style={{
-                          fontSize: "1.8rem",
-                          cursor: "pointer",
-                          color: n <= calificacion ? "#ffc107" : "#ccc",
-                          transition: "color 0.2s ease",
-                        }}
-                        onClick={() => setCalificacion(n)}
-                      >
-                        ★
-                      </span>
-                    ))}
+                    {renderEstrellas()}
                   </div>
-
                   <textarea
-                    className="map-input"
-                    placeholder="Escribe una reseña..."
+                    className="reseña-input"
+                    placeholder="Comparte tu experiencia..."
                     value={comentario}
                     onChange={(e) => setComentario(e.target.value)}
-                    style={{ marginTop: "0.6rem", height: "80px", resize: "none" }}
-                  />
-
-                  <button className="home-button" style={{ marginTop: "0.6rem" }} onClick={enviarReseña} disabled={calificacion === 0}>
+                  ></textarea>
+                  <button className="btn-estado verde" onClick={enviarReseña} style={{ marginTop: "0.8rem" }}>
                     Enviar reseña
                   </button>
                 </div>
@@ -349,8 +356,9 @@ export default function Home() {
 
               {enviado && (
                 <div className="viaje-actual finalizado">
-                  <p>🕊️ Gracias por tu reseña.</p>
-                  <p>Tu experiencia ha sido registrada.</p>
+                  <p>
+                    ¡Gracias por tu reseña!
+                  </p>
                 </div>
               )}
             </div>

@@ -6,6 +6,8 @@ export default function Verify2FA() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [qr, setQr] = useState(null);
+  const [showQR, setShowQR] = useState(false);
   const navigate = useNavigate();
 
   const handleVerify = async (e) => {
@@ -14,21 +16,31 @@ export default function Verify2FA() {
     setError("");
 
     try {
-      // Simulación de verificación (a futuro se conectará al backend)
       if (code === "123456") {
-        // Código correcto → activar sesión
         const tempToken = sessionStorage.getItem("tempToken");
         if (tempToken) localStorage.setItem("token", tempToken);
         sessionStorage.removeItem("tempToken");
-        alert("✅ Verificación completada con éxito");
         navigate("/home");
       } else {
         setError("Código incorrecto. Intenta nuevamente.");
       }
     } catch (err) {
-      setError("Error al verificar el código.", err);
+      setError("Error al verificar el código.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateQR = async () => {
+    try {
+      const qrRes = await fetch(
+        `https://colibri-backend-od5b.onrender.com/auth/generate-2fa/test@example.com`
+      );
+      const qrData = await qrRes.json();
+      setQr(qrData.qr);
+      setShowQR(true);
+    } catch (err) {
+      setError("Error al generar código QR");
     }
   };
 
@@ -47,8 +59,8 @@ export default function Verify2FA() {
             type="text"
             maxLength="6"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="Ingresa tu código"
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+            placeholder="000000"
             required
             className="verify-input"
           />
@@ -61,12 +73,26 @@ export default function Verify2FA() {
           </button>
         </form>
 
-        <p className="verify-footer">
-          ¿No recibiste el código?{" "}
-          <button className="verify-link" onClick={() => alert("📩 Código reenviado (simulado)")}>
-            Reenviar código
+        <div className="verify-footer">
+          ¿No recibiste el código?
+          <button className="verify-link" onClick={handleGenerateQR}>
+            Generar código QR
           </button>
-        </p>
+        </div>
+
+        {showQR && qr && (
+          <div style={{marginTop: '2rem'}}>
+            <p>Escanea este código QR:</p>
+            <img src={qr} alt="QR Code" className="qr-image" />
+            <button 
+              className="verify-button" 
+              onClick={() => setShowQR(false)}
+              style={{marginTop: '1rem', padding: '0.6rem 1.5rem', fontSize: '0.9rem'}}
+            >
+              Cerrar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -26,7 +26,7 @@ export default function Register() {
       const res = await fetch("https://colibri-backend-od5b.onrender.com/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, rol: "viajero" }), // Rol por default pasajero
+        body: JSON.stringify({ ...form, rol: "viajero" }),
       });
 
       const data = await res.json();
@@ -52,7 +52,7 @@ export default function Register() {
       <div className="register-box">
         <div className="register-header">
           <img
-            src="/icons/icon-192x192.png"
+            src="/src/assets/Logo.png"
             alt="Colibrí logo"
             className="register-logo"
           />
