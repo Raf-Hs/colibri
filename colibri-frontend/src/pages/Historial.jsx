@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Historial.css";
 
 export default function Historial() {
   const [viajes, setViajes] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const guardados = JSON.parse(localStorage.getItem("viajesColibri")) || [];
@@ -15,10 +17,14 @@ export default function Historial() {
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             key={star}
-            className={`estrella ${star <= calificacion ? 'activa' : ''}`}
+            className={`estrella ${star <= calificacion ? "activa" : ""}`}
           >
             <svg className="tabler-icon icon-sm">
-              <use xlinkHref={star <= calificacion ? "#icon-star-filled" : "#icon-star"}></use>
+              <use
+                xlinkHref={
+                  star <= calificacion ? "#icon-star-filled" : "#icon-star"
+                }
+              ></use>
             </svg>
           </span>
         ))}
@@ -38,7 +44,7 @@ export default function Historial() {
 
         {viajes.length === 0 ? (
           <div className="historial-empty">
-            <svg className="tabler-icon icon-xl" style={{opacity: 0.5}}>
+            <svg className="tabler-icon icon-xl" style={{ opacity: 0.5 }}>
               <use xlinkHref="#icon-file-text"></use>
             </svg>
             <p>Aún no hay viajes guardados.</p>
@@ -80,15 +86,19 @@ export default function Historial() {
                     {viaje.estado}
                   </span>
                 </p>
+
+                {/* Calificación */}
                 {viaje.calificacion && (
                   <p className="calificacion">
                     <svg className="tabler-icon icon-sm">
                       <use xlinkHref="#icon-star"></use>
                     </svg>
-                    <strong>Calificación:</strong> 
+                    <strong>Calificación:</strong>
                     {renderEstrellas(viaje.calificacion)}
                   </p>
                 )}
+
+                {/* Reseña */}
                 {viaje.reseña && (
                   <p>
                     <svg className="tabler-icon icon-sm">
@@ -96,6 +106,16 @@ export default function Historial() {
                     </svg>
                     <strong>Reseña:</strong> {viaje.reseña}
                   </p>
+                )}
+
+                {/* Botón para ir a reseñas si el viaje está finalizado */}
+                {viaje.estado === "finalizado" && (
+                  <button
+                    onClick={() => navigate("/reseñas")}
+                    className="btn-reseñas"
+                  >
+                    ⭐ Ver reseñas
+                  </button>
                 )}
               </li>
             ))}

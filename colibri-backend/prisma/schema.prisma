@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,17 +18,17 @@ enum TripStatus {
 }
 
 model Usuario {
-  id         Int       @id @default(autoincrement())
-  nombre     String
-  email      String    @unique
-  telefono   String
-  password   String
-  rol        String
-  secret2FA  String?   // ← necesario para 2FA (puede ser null)
-  createdAt  DateTime  @default(now())
-  viajes     Viaje[]   @relation("UsuarioViajes")
+  id        Int     @id @default(autoincrement())
+  nombre    String
+  email     String  @unique
+  telefono  String
+  password  String
+  rol       String  // "viajero" | "conductor" | "ambos" (flexible)
+  createdAt DateTime @default(now())
+  viajes    Viaje[] @relation("UsuarioViajes")
+  reseñasRecibidas Reseña[] @relation("ReseñasRecibidas")
+  reseñasDadas     Reseña[] @relation("ReseñasDadas")
 }
-
 
 model Viaje {
   id          Int        @id @default(autoincrement())
@@ -40,9 +37,26 @@ model Viaje {
   costo       Int
   metodoPago  String      // "efectivo" (por ahora)
   estado      TripStatus  @default(PENDIENTE)
-  calificacion Int?       // 1..5
+  calificacion Int?       // 1..5 (deprecated - usar Reseña)
   conductor   String
   usuarioId   Int
   usuario     Usuario     @relation("UsuarioViajes", fields: [usuarioId], references: [id])
   createdAt   DateTime    @default(now())
+  reseñas     Reseña[]
+}
+
+model Reseña {
+  id             Int      @id @default(autoincrement())
+  calificacion   Int      // 1..5
+  comentario     String?
+  tipoReseña     String   // "pasajero_a_conductor" | "conductor_a_pasajero"
+  viajeId        Int
+  viaje          Viaje    @relation(fields: [viajeId], references: [id])
+  autorId        Int      // quien hace la reseña
+  autor          Usuario  @relation("ReseñasDadas", fields: [autorId], references: [id])
+  receptorId     Int      // quien recibe la reseña
+  receptor       Usuario  @relation("ReseñasRecibidas", fields: [receptorId], references: [id])
+  createdAt      DateTime @default(now())
+
+  @@unique([viajeId, autorId, tipoReseña])
 }

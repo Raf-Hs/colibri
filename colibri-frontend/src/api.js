@@ -64,3 +64,34 @@ export async function apiRateTrip(id, calificacion, token) {
   });
   return res.json();
 }
+
+export async function apiCreateReview(data, token) {
+  const res = await fetch(`${API_URL}/reviews`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function apiGetUserReviews(userId) {
+  const res = await fetch(`${API_URL}/reviews/usuario/${userId}`);
+  return res.json();
+}
+
+export async function apiGetTripReviews(tripId, token) {
+  const res = await fetch(`${API_URL}/reviews/viaje/${tripId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.json();
+}
+
+export async function apiGetMyReviews(token) {
+  const res = await fetch(`${API_URL}/reviews/mis-reseñas`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.json();
+}

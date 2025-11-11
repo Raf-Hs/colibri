@@ -7,6 +7,7 @@ import { execSync } from "child_process";
 
 import authRoutes from "./routes/auth.routes.js";
 import tripsRoutes from "./routes/trips.routes.js";
+import reviewsRoutes from "./routes/reviews.routes.js";
 
 const app = express();
 app.use(cors());
@@ -15,6 +16,7 @@ app.use(express.json());
 app.get("/", (_, res) => res.send("API Colibrí ✅"));
 app.use("/auth", authRoutes);
 app.use("/trips", tripsRoutes);
+app.use("/reviews", reviewsRoutes);
 
 app.get("/health", (_, res) => res.json({ status: "ok", time: new Date().toISOString() }));
 

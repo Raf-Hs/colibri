@@ -10,6 +10,7 @@ import Historial from "./pages/Historial";
 import SplashScreen from "./pages/SplashScreen";
 import Sidebar from "./components/Sidebar";
 import "./pages/SplashScreen.css";
+import Reseñas from "./pages/Reseñas";
 
 /* ===== PROTECCIÓN DE RUTAS ===== */
 function ProtectedRoute({ children }) {
@@ -60,6 +61,14 @@ export default function App() {
             }
           />
 
+          <Route 
+            path="/reseñas" 
+            element={
+            <ProtectedRoute>
+                <Reseñas />
+              </ProtectedRoute>
+            }
+          />
           {/* Redirección por defecto */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

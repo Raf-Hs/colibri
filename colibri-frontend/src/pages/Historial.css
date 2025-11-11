@@ -335,3 +335,20 @@
 .estrella.activa {
   color: #F48C64;
 }
+
+.btn-reseñas {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  transition: background 0.2s ease;
+}
+
+.btn-reseñas:hover {
+  background: #218838;
+}
