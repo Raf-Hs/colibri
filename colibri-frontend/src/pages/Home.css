@@ -363,3 +363,72 @@
   color: #495057;
   border-left: 3px solid #2B9C93;
 }
+
+/* Tarjeta de solicitud para conductor */
+.oferta-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 6px 20px rgba(43, 156, 147, 0.15);
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease-in-out;
+  border-left: 5px solid #2B9C93;
+  transition: transform 0.2s ease;
+}
+
+.oferta-card:hover {
+  transform: translateY(-3px);
+}
+
+.oferta-card h3 {
+  font-size: 1.1rem;
+  color: #2B9C93;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.oferta-card p {
+  font-size: 0.9rem;
+  color: #495057;
+  margin: 0.25rem 0;
+}
+
+.oferta-card strong {
+  color: #2B9C93;
+  font-weight: 600;
+}
+
+.oferta-precio {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+
+.btn-estado.rojo {
+  background: linear-gradient(135deg, #FF6B6B 0%, #F48C64 100%);
+  border: none;
+  color: white;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-estado.rojo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(244, 140, 100, 0.4);
+}
+
+.oferta-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.oferta-header .icono {
+  font-size: 1.4rem;
+  color: #2B9C93;
+}

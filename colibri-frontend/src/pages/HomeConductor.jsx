@@ -37,28 +37,38 @@ export default function HomeConductor() {
       console.log("🔴 Conductor inactivo — no recibe solicitudes");
     }
 
-    // === Nueva solicitud de viaje recibida ===
     socket.on("nuevo_viaje_disponible", (data) => {
       console.log("📢 Nueva solicitud de viaje detectada:", data);
       setSolicitud(data);
       setViaje((v) => ({ ...v, estado: "solicitud_pendiente" }));
     });
 
-    // === Viaje confirmado ===
     socket.on("viaje_confirmado", (data) => {
       if (data.conductor.id !== localStorage.getItem("userEmail")) return;
-      console.log("✅ Viaje confirmado. Iniciando trayecto hacia pasajero:", data);
-      setSolicitud(null);
-      iniciarSimulacionHaciaPasajero(data);
+      console.log("🟡 El pasajero confirmó primero, esperando respuesta del conductor:", data);
+      setViaje((v) => ({
+        ...v,
+        estado: "esperando_confirmacion_conductor",
+        pasajeroUbicacion: data.origen,
+      }));
+      setSolicitud(data);
+    });
+
+    socket.on("iniciar_recogida", (data) => {
+      if (data.conductor.id === localStorage.getItem("userEmail")) {
+        console.log("🟢 Ambas partes confirmaron. Inicia fase de recogida:", data);
+        iniciarSimulacionHaciaPasajero(data);
+      }
     });
 
     return () => {
       socket.off("nuevo_viaje_disponible");
       socket.off("viaje_confirmado");
+      socket.off("iniciar_recogida");
     };
   }, [activo]);
 
-  // === Simular trayecto hacia pasajero ===
+  // === Simular ruta al pasajero ===
   const iniciarSimulacionHaciaPasajero = (data) => {
     console.log("🧭 Calculando ruta hacia el pasajero...");
     const directionsService = new window.google.maps.DirectionsService();
@@ -77,6 +87,8 @@ export default function HomeConductor() {
             directions: result,
             estado: "conductor_en_camino",
             progreso: 0,
+            pasajero: data.pasajero,
+            destino: data.destino,
           }));
 
           const path = result.routes[0].overview_path;
@@ -88,18 +100,63 @@ export default function HomeConductor() {
               const punto = path[i];
               setPosicionConductor({ lat: punto.lat(), lng: punto.lng() });
               setViaje((v) => ({ ...v, progreso: ((i / total) * 100).toFixed(0) }));
-              if (i % 10 === 0)
-                console.log(`📍 Avanzando por la ruta (${((i / total) * 100).toFixed(0)}%)`);
               i++;
             } else {
               clearInterval(intervaloRef.current);
-              socket.emit("conductor_llego", { pasajero: data.pasajero });
               console.log("🏁 El conductor ha llegado al punto de recogida");
               setViaje((v) => ({ ...v, estado: "listo_para_iniciar" }));
+              socket.emit("conductor_llego", { pasajero: data.pasajero });
             }
-          }, 1000);
+          }, 800);
         } else {
           console.warn("⚠️ No se pudo generar la ruta:", status);
+        }
+      }
+    );
+  };
+
+  // === Simular viaje al destino ===
+  const iniciarViaje = () => {
+    console.log("🚀 Iniciando viaje hacia el destino...");
+    if (!viaje.destino) return;
+
+    const directionsService = new window.google.maps.DirectionsService();
+
+    directionsService.route(
+      {
+        origin: posicionConductor,
+        destination: viaje.destino,
+        travelMode: window.google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === "OK") {
+          console.log("📍 Ruta al destino generada. Simulando trayecto...");
+          setViaje((v) => ({
+            ...v,
+            directions: result,
+            estado: "viaje_en_progreso",
+            progreso: 0,
+          }));
+
+          const path = result.routes[0].overview_path;
+          let i = 0;
+          const total = path.length;
+
+          intervaloRef.current = setInterval(() => {
+            if (i < total) {
+              const punto = path[i];
+              setPosicionConductor({ lat: punto.lat(), lng: punto.lng() });
+              setViaje((v) => ({ ...v, progreso: ((i / total) * 100).toFixed(0) }));
+              i++;
+            } else {
+              clearInterval(intervaloRef.current);
+              console.log("🏁 El viaje ha llegado al destino final.");
+              setViaje((v) => ({ ...v, estado: "viaje_finalizado" }));
+              socket.emit("viaje_finalizado", { pasajero: viaje.pasajero });
+            }
+          }, 800);
+        } else {
+          console.warn("⚠️ Error al generar ruta al destino:", status);
         }
       }
     );
@@ -125,7 +182,16 @@ export default function HomeConductor() {
     setViaje((v) => ({ ...v, estado: "esperando_confirmacion" }));
   };
 
-  // === Conductor rechaza viaje ===
+  const cancelarConfirmacion = () => {
+    console.log("❌ Conductor canceló la confirmación");
+    socket.emit("cancelar_confirmacion", {
+      conductor: localStorage.getItem("userEmail"),
+      pasajero: solicitud?.pasajero,
+    });
+    setViaje((v) => ({ ...v, estado: "pendiente" }));
+    setSolicitud(null);
+  };
+
   const rechazarViaje = () => {
     console.log("🔴 Conductor rechaza la solicitud:", solicitud);
     setSolicitud(null);
@@ -134,6 +200,16 @@ export default function HomeConductor() {
       conductor: localStorage.getItem("userEmail"),
       pasajero: solicitud?.pasajero,
     });
+  };
+
+  const finalizarViaje = () => {
+    console.log("✅ Viaje finalizado correctamente.");
+    setViaje((v) => ({
+      directions: null,
+      estado: "pendiente",
+      progreso: 0,
+    }));
+    setSolicitud(null);
   };
 
   return (
@@ -145,7 +221,7 @@ export default function HomeConductor() {
           <MapaRutas marcadorConductor={posicionConductor} directions={viaje.directions} />
         </section>
 
-        {/* === Nueva solicitud de viaje === */}
+        {/* === Nueva solicitud === */}
         {solicitud && viaje.estado === "solicitud_pendiente" && (
           <div className="oferta-card">
             <div className="oferta-info">
@@ -156,24 +232,26 @@ export default function HomeConductor() {
               <p><strong>Distancia:</strong> {solicitud.distancia}</p>
             </div>
             <div className="oferta-precio">
-              <button className="btn-estado verde" onClick={aceptarViaje}>
-                Aceptar viaje
-              </button>
-              <button
-                className="btn-estado rojo"
-                onClick={rechazarViaje}
-                style={{ marginLeft: "0.5rem" }}
-              >
-                Rechazar
-              </button>
+              <button className="btn-estado verde" onClick={aceptarViaje}>Aceptar viaje</button>
+              <button className="btn-estado rojo" onClick={rechazarViaje}>Rechazar</button>
             </div>
           </div>
         )}
 
-        {/* === Estados del viaje === */}
         {viaje.estado === "esperando_confirmacion" && (
           <div className="viaje-actual">
             <p>Esperando confirmación del pasajero...</p>
+            <button className="btn-estado rojo" onClick={cancelarConfirmacion}>Cancelar viaje</button>
+          </div>
+        )}
+
+        {viaje.estado === "esperando_confirmacion_conductor" && (
+          <div className="viaje-actual">
+            <p>El pasajero ya aceptó el viaje. ¿Deseas confirmar?</p>
+            <div className="acciones">
+              <button className="btn-estado verde" onClick={aceptarViaje}>Confirmar</button>
+              <button className="btn-estado rojo" onClick={cancelarConfirmacion}>Cancelar</button>
+            </div>
           </div>
         )}
 
@@ -186,32 +264,48 @@ export default function HomeConductor() {
           </div>
         )}
 
-        {/* === Control de estado (activar / detener) === */}
+        {viaje.estado === "listo_para_iniciar" && (
+          <div className="viaje-actual">
+            <p>Has llegado al punto de recogida. Esperando al pasajero...</p>
+            <button className="btn-estado verde" onClick={iniciarViaje}>
+              Iniciar viaje
+            </button>
+          </div>
+        )}
+
+        {viaje.estado === "viaje_en_progreso" && (
+          <div className="viaje-actual">
+            <p>En viaje hacia el destino...</p>
+            <div className="progreso-barra">
+              <div className="progreso-fill" style={{ width: `${viaje.progreso || 0}%` }}></div>
+            </div>
+          </div>
+        )}
+
+        {viaje.estado === "viaje_finalizado" && (
+          <div className="viaje-actual">
+            <p>🚩 Has llegado al destino.</p>
+            <button className="btn-estado verde" onClick={finalizarViaje}>
+              Finalizar viaje
+            </button>
+          </div>
+        )}
+
+        {/* === Estado general === */}
         <div className="trip-card">
           {!activo ? (
-            <button
-              className="home-button"
-              onClick={() => {
-                console.log("🟢 Conductor activado — esperando pasajeros...");
-                setActivo(true);
-              }}
-            >
-              Recibir Viajes
-            </button>
+            <button className="home-button" onClick={() => {
+              console.log("🟢 Conductor activado — esperando pasajeros...");
+              setActivo(true);
+            }}>Recibir Viajes</button>
           ) : (
             <div className="viaje-actual">
               <p>Estado: <strong>Activo</strong></p>
               <p>Esperando solicitudes...</p>
-              <button
-                className="btn-estado verde"
-                style={{ background: "#F48C64" }}
-                onClick={() => {
-                  console.log("⛔ Conductor detuvo la recepción de viajes");
-                  setActivo(false);
-                }}
-              >
-                Detener
-              </button>
+              <button className="btn-estado verde" style={{ background: "#F48C64" }} onClick={() => {
+                console.log("⛔ Conductor detuvo la recepción de viajes");
+                setActivo(false);
+              }}>Detener</button>
             </div>
           )}
         </div>
