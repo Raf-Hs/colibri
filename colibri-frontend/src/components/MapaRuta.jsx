@@ -9,12 +9,17 @@ const containerStyle = {
 
 const fallbackCenter = { lat: 21.3589, lng: -99.6733 };
 
-export default function MapaRutas({ onSelect, marcadorConductor }) {
+export default function MapaRutas({
+  onSelect,
+  marcadorConductor,
+  directions,
+  rutaConductorPasajero, // 🔹 nueva prop
+}) {
   const [map, setMap] = useState(null);
   const [center, setCenter] = useState(fallbackCenter);
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
-  const [directions, setDirections] = useState(null);
+  const [directionsLocal, setDirectionsLocal] = useState(null);
   const [originText, setOriginText] = useState("");
   const [destinationText, setDestinationText] = useState("");
 
@@ -43,35 +48,35 @@ export default function MapaRutas({ onSelect, marcadorConductor }) {
       setOrigin(clicked);
       setOriginText(`${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`);
       setDestination(null);
-      setDirections(null);
+      setDirectionsLocal(null);
       onSelect?.({ origen: clicked });
     } else if (!destination) {
       setDestination(clicked);
       setDestinationText(`${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`);
       onSelect?.({ destino: clicked });
-      calcularRuta(origin, clicked);
+      calcularRuta(clicked);
     } else {
       setOrigin(clicked);
       setOriginText(`${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`);
       setDestination(null);
       setDestinationText("");
-      setDirections(null);
+      setDirectionsLocal(null);
       onSelect?.({ origen: clicked, destino: null });
     }
   };
 
-  // === CALCULAR RUTA ===
-  const calcularRuta = (orig, dest) => {
+  // === CALCULAR RUTA PRINCIPAL ===
+  const calcularRuta = (dest) => {
     const svc = new window.google.maps.DirectionsService();
     svc.route(
       {
-        origin: orig,
+        origin,
         destination: dest,
         travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (res, status) => {
         if (status === "OK") {
-          setDirections(res);
+          setDirectionsLocal(res);
           const leg = res.routes[0].legs[0];
           onSelect?.({
             directions: res,
@@ -102,6 +107,25 @@ export default function MapaRutas({ onSelect, marcadorConductor }) {
       { enableHighAccuracy: true }
     );
   };
+
+  // === Renderiza la segunda ruta (conductor → pasajero) ===
+  useEffect(() => {
+    if (!map || !rutaConductorPasajero) return;
+
+    const rendererSecundario = new window.google.maps.DirectionsRenderer({
+      map,
+      suppressMarkers: true,
+      polylineOptions: {
+        strokeColor: "#1E88E5", // azul para distinguir
+        strokeOpacity: 0.7,
+        strokeWeight: 4,
+      },
+    });
+
+    rendererSecundario.setDirections(rutaConductorPasajero);
+
+    return () => rendererSecundario.setMap(null);
+  }, [map, rutaConductorPasajero]);
 
   return (
     <div className="map-wrapper">
@@ -142,8 +166,10 @@ export default function MapaRutas({ onSelect, marcadorConductor }) {
           {!directions && origin && <Marker position={origin} label="A" />}
           {!directions && destination && <Marker position={destination} label="B" />}
 
-          {/* Render de la ruta */}
-          {directions && <DirectionsRenderer directions={directions} />}
+          {/* Ruta principal */}
+          {(directions || directionsLocal) && (
+            <DirectionsRenderer directions={directions || directionsLocal} />
+          )}
 
           {/* 🔹 Marcador del conductor en movimiento */}
           {marcadorConductor && (
@@ -160,7 +186,7 @@ export default function MapaRutas({ onSelect, marcadorConductor }) {
             />
           )}
 
-          {/* 🔵 Marcador del usuario (GPS actual) */}
+          {/* 🔵 Marcador del usuario */}
           {origin && (
             <Marker
               position={origin}

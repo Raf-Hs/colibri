@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">colibri-frontend</string>
-    <string name="title_activity_main">colibri-frontend</string>
-    <string name="package_name">colibri.app</string>
-    <string name="custom_url_scheme">colibri.app</string>
+    <string name="app_name">colibri</string>
+    <string name="title_activity_main">colibri</string>
+    <string name="package_name">com.colibri.app</string>
+    <string name="custom_url_scheme">com.colibri.app</string>
 </resources>

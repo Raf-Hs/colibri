@@ -1,6 +1,6 @@
 {
-  "appId": "com.colibri.app",
-  "appName": "Colibrí",
+  "appId": "com.colibri.huitzilin",
+  "appName": "colibri",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {

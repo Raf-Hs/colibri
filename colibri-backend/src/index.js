@@ -44,24 +44,33 @@ io.on("connection", (socket) => {
   });
 
   socket.on("buscar_conductor", (viaje) => {
-    // viaje: { origen: {lat, lng}, destino, distancia }
-    const cercanos = Array.from(conductoresActivos.values()).filter(
-      (c) => distancia(c.lat, c.lng, viaje.origen.lat, viaje.origen.lng) < 5
-    );
+  console.log("📨 Pasajero solicita viaje:", viaje);
 
-    console.log("📍 Conductores cercanos:", cercanos.length);
+  const lat = Number(viaje.origen.lat);
+  const lng = Number(viaje.origen.lng);
 
-    if (cercanos.length > 0) {
-      io.to(socket.id).emit("ofertas", cercanos);
-      cercanos.forEach((c) => {
-        const conductorSocket = [...conductoresActivos.entries()]
-          .find(([_, val]) => val.id === c.id)?.[0];
-        if (conductorSocket) {
-          io.to(conductorSocket).emit("nuevo_viaje", viaje);
-        }
-      });
-    }
+  const cercanos = Array.from(conductoresActivos.values()).filter((c) => {
+    const dist = distancia(Number(c.lat), Number(c.lng), lat, lng);
+    console.log(`📏 Distancia con ${c.id}: ${dist.toFixed(2)} km`);
+    return dist < 5;
   });
+
+  console.log("📍 Conductores cercanos detectados:", cercanos.length);
+
+  if (cercanos.length > 0) {
+    io.to(socket.id).emit("ofertas", cercanos);
+    cercanos.forEach((c) => {
+      const conductorSocket = [...conductoresActivos.entries()]
+        .find(([_, val]) => val.id === c.id)?.[0];
+      if (conductorSocket) {
+        console.log(`📤 Enviando viaje al conductor ${c.id}`);
+        io.to(conductorSocket).emit("nuevo_viaje_disponible", viaje);
+      }
+    });
+  } else {
+    console.log("🚫 No hay conductores cercanos al pasajero");
+  }
+});
 
   socket.on("disconnect", () => {
     conductoresActivos.delete(socket.id);
