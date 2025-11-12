@@ -98,6 +98,38 @@ function distancia(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Estado temporal de viajes confirmados
+const viajesActivos = new Map();
+
+// Cuando el conductor acepta el viaje
+socket.on("conductor_acepta_viaje", (data) => {
+  console.log("✅ Conductor aceptó el viaje:", data);
+  // Guardamos temporalmente el viaje
+  viajesActivos.set(data.pasajero, { conductor: data.conductor, origen: data.origen });
+  // Notificamos al pasajero que el conductor ha confirmado
+  io.emit("viaje_confirmado", data);
+});
+
+// Cuando el pasajero confirma también
+socket.on("conductor_asignado", (data) => {
+  console.log("🚘 Pasajero confirmó al conductor:", data);
+  const viajePrevio = viajesActivos.get(data.pasajero);
+
+  if (viajePrevio) {
+    // Ambas partes confirmaron → comenzar fase de recogida
+    io.emit("iniciar_recogida", {
+      pasajero: data.pasajero,
+      conductor: viajePrevio.conductor,
+      origen: data.origen,
+    });
+    viajesActivos.delete(data.pasajero);
+    console.log("🟢 Viaje activo iniciado entre pasajero y conductor.");
+  } else {
+    // Si aún no está en el mapa, solo marcamos confirmación pasajero
+    viajesActivos.set(data.pasajero, { pasajeroConfirmado: true, ...data });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () =>
   console.log(`🚀 API + Socket corriendo en http://localhost:${PORT}`)
