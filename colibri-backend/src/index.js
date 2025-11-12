@@ -153,6 +153,23 @@ socket.on("conductor_asignado", (data) => {
     io.emit("viaje_cancelado", data);
   });
 
+  // === Conductor finaliza el viaje ===
+socket.on("viaje_finalizado", (data) => {
+  console.log("🏁 El conductor marcó el viaje como finalizado:", data);
+
+  // Enviar confirmación del fin del viaje a ambos
+  io.emit("viaje_finalizado", {
+    pasajero: data.pasajero,
+    conductor: data.conductor || "desconocido",
+    origen: data.origen || null,
+    destino: data.destino || null,
+    tiempo: data.tiempo || null,
+    costo: data.costo || null,
+  });
+
+  console.log("📢 Evento 'viaje_finalizado' emitido a pasajero y conductor.");
+});
+
   // === Conductor desconectado ===
   socket.on("disconnect", () => {
     conductoresActivos.delete(socket.id);
