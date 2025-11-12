@@ -88,26 +88,58 @@ io.on("connection", (socket) => {
   // === Conductor acepta viaje ===
   socket.on("conductor_acepta_viaje", (data) => {
     console.log("✅ Conductor aceptó el viaje:", data);
-    viajesActivos.set(data.pasajero, { conductor: data.conductor, origen: data.origen });
-    io.emit("viaje_confirmado", data);
+    const previo = viajesActivos.get(data.pasajero);
+
+    if (previo && previo.pasajeroConfirmado) {
+      // Pasajero ya había confirmado → ambos listos
+      io.emit("iniciar_recogida", {
+        pasajero: data.pasajero,
+        conductor: data.conductor,
+        origen: data.origen,
+      });
+      viajesActivos.delete(data.pasajero);
+      console.log("🟢 Ambas partes confirmadas (pasajero primero). Viaje iniciado.");
+    } else {
+      // Guardar confirmación del conductor
+      viajesActivos.set(data.pasajero, {
+        conductor: data.conductor,
+        origen: data.origen,
+        conductorConfirmado: true,
+      });
+      io.emit("viaje_confirmado", data);
+      console.log("🕓 Conductor confirmó. Esperando al pasajero...");
+    }
   });
 
   // === Pasajero confirma asignación ===
   socket.on("conductor_asignado", (data) => {
     console.log("🚘 Pasajero confirmó al conductor:", data);
-    const viajePrevio = viajesActivos.get(data.pasajero);
+    const previo = viajesActivos.get(data.pasajero);
 
-    if (viajePrevio) {
+    if (previo && previo.conductorConfirmado) {
+      // Conductor ya había confirmado → ambos listos
       io.emit("iniciar_recogida", {
         pasajero: data.pasajero,
-        conductor: viajePrevio.conductor,
+        conductor: previo.conductor,
         origen: data.origen,
       });
       viajesActivos.delete(data.pasajero);
-      console.log("🟢 Viaje activo iniciado entre pasajero y conductor.");
+      console.log("🟢 Ambas partes confirmadas (conductor primero). Viaje iniciado.");
     } else {
-      viajesActivos.set(data.pasajero, { pasajeroConfirmado: true, ...data });
+      // Guardar confirmación del pasajero
+      viajesActivos.set(data.pasajero, {
+        pasajeroConfirmado: true,
+        ...data,
+      });
+      console.log("🕓 Pasajero confirmó. Esperando al conductor...");
     }
+  });
+
+  // === Cancelar confirmación (ambos pueden hacerlo) ===
+  socket.on("cancelar_confirmacion", (data) => {
+    console.log("❌ Una de las partes canceló la confirmación:", data);
+    viajesActivos.delete(data.pasajero);
+    io.emit("viaje_cancelado", data);
   });
 
   // === Conductor desconectado ===
