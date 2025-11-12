@@ -16,7 +16,9 @@ app.use(express.json());
 app.get("/", (_, res) => res.send("API Colibrí ✅"));
 app.use("/auth", authRoutes);
 app.use("/trips", tripsRoutes);
-app.get("/health", (_, res) => res.json({ status: "ok", time: new Date().toISOString() }));
+app.get("/health", (_, res) =>
+  res.json({ status: "ok", time: new Date().toISOString() })
+);
 
 // === Migraciones Prisma ===
 try {
@@ -51,102 +53,96 @@ io.on("connection", (socket) => {
   socket.on("buscar_conductor", (viaje) => {
     console.log("📨 Pasajero solicita viaje:", viaje);
 
-    const lat = Number(viaje.origen.lat);
-    const lng = Number(viaje.origen.lng);
-    console.log("🧭 Coordenadas pasajero:", lat, lng);
-
-    // Mostrar todos los conductores activos
     console.log("🚗 Conductores activos registrados:");
     for (const [id, c] of conductoresActivos.entries()) {
       console.log(`  → ${c.id}: (${c.lat}, ${c.lng})`);
     }
 
-    // Filtrar conductores cercanos (radio de 5 km)
-    const cercanos = Array.from(conductoresActivos.values()).filter((c) => {
-      const dist = distancia(Number(c.lat), Number(c.lng), lat, lng);
-      console.log(`📏 Distancia con ${c.id}: ${dist.toFixed(2)} km`);
-      return dist < 5;
-    });
+    const todos = Array.from(conductoresActivos.entries());
 
-    console.log("📍 Conductores cercanos detectados:", cercanos.length);
-
-    if (cercanos.length > 0) {
-      io.to(socket.id).emit("ofertas", cercanos);
-      cercanos.forEach((c) => {
-        const conductorSocket = [...conductoresActivos.entries()]
-          .find(([_, val]) => val.id === c.id)?.[0];
-        if (conductorSocket) {
-          console.log(`📤 Enviando viaje al conductor ${c.id}`);
-          io.to(conductorSocket).emit("nuevo_viaje_disponible", viaje);
-        }
+    if (todos.length === 0) {
+      console.log("🚫 No hay conductores activos actualmente.");
+      io.to(socket.id).emit("sin_conductores", {
+        mensaje: "No hay conductores disponibles por ahora.",
       });
     } else {
-      console.log("🚫 No hay conductores cercanos al pasajero");
+      console.log("📢 Enviando solicitud de viaje a todos los conductores activos...");
+      todos.forEach(([id, info]) => {
+        console.log(`📤 Enviando viaje al conductor ${info.id}`);
+        io.to(id).emit("nuevo_viaje_disponible", viaje);
+      });
+
+      io.to(socket.id).emit(
+        "ofertas",
+        todos.map(([_, c]) => ({
+          id: c.id,
+          nombre: c.nombre,
+          lat: c.lat,
+          lng: c.lng,
+        }))
+      );
     }
   });
 
   // === Conductor acepta viaje ===
-socket.on("conductor_acepta_viaje", (data) => {
-  console.log("✅ Conductor aceptó el viaje:", data);
-  const previo = viajesActivos.get(data.pasajero);
+  socket.on("conductor_acepta_viaje", (data) => {
+    console.log("✅ Conductor aceptó el viaje:", data);
+    const previo = viajesActivos.get(data.pasajero);
 
-  if (previo && previo.pasajeroConfirmado) {
-    // 🔹 Ambas partes confirmadas
-    const payload = {
-      pasajero: data.pasajero,
-      conductor: data.conductor,
-      origen: data.origen,
-      destino: data.destino,
-      progreso: 0,
-    };
+    if (previo && previo.pasajeroConfirmado) {
+      const payload = {
+        pasajero: data.pasajero,
+        conductor: data.conductor,
+        origen: data.origen,
+        destino: data.destino,
+        progreso: 0,
+      };
 
-    io.emit("iniciar_recogida", payload);
+      io.emit("iniciar_recogida", payload);
+      io.emit("viaje_en_progreso", payload);
 
-    // 🔹 Nuevo evento explícito de inicio de viaje
-    io.emit("viaje_en_progreso", payload);
+      viajesActivos.delete(data.pasajero);
+      console.log("🟢 Ambas partes confirmadas (pasajero primero). Viaje iniciado.");
+    } else {
+      viajesActivos.set(data.pasajero, {
+        conductor: data.conductor,
+        origen: data.origen,
+        conductorConfirmado: true,
+      });
+      io.emit("viaje_confirmado", data);
+      console.log("🕓 Conductor confirmó. Esperando al pasajero...");
+    }
+  });
 
-    viajesActivos.delete(data.pasajero);
-    console.log("🟢 Ambas partes confirmadas (pasajero primero). Viaje iniciado.");
-  } else {
-    viajesActivos.set(data.pasajero, {
-      conductor: data.conductor,
-      origen: data.origen,
-      conductorConfirmado: true,
-    });
-    io.emit("viaje_confirmado", data);
-    console.log("🕓 Conductor confirmó. Esperando al pasajero...");
-  }
-});
+  // === Pasajero confirma asignación ===
+  socket.on("conductor_asignado", (data) => {
+    console.log("🚘 Pasajero confirmó al conductor:", data);
+    const previo = viajesActivos.get(data.pasajero);
 
-// === Pasajero confirma asignación ===
-socket.on("conductor_asignado", (data) => {
-  console.log("🚘 Pasajero confirmó al conductor:", data);
-  const previo = viajesActivos.get(data.pasajero);
+    if (previo && previo.conductorConfirmado) {
+      const payload = {
+        pasajero: data.pasajero,
+        conductor: previo.conductor,
+        origen: data.origen,
+        destino: data.destino,
+        progreso: 0,
+      };
 
-  if (previo && previo.conductorConfirmado) {
-    const payload = {
-      pasajero: data.pasajero,
-      conductor: previo.conductor,
-      origen: data.origen,
-      destino: data.destino,
-      progreso: 0,
-    };
+      io.emit("iniciar_recogida", payload);
+      io.emit("viaje_en_progreso", payload);
 
-    io.emit("iniciar_recogida", payload);
-    io.emit("viaje_en_progreso", payload); // 🔹 aquí también
+      viajesActivos.delete(data.pasajero);
+      console.log("🟢 Ambas partes confirmadas (conductor primero). Viaje iniciado.");
+    } else {
+      viajesActivos.set(data.pasajero, {
+        pasajeroConfirmado: true,
+        ...data,
+      });
+      console.log("🕓 Pasajero confirmó. Esperando al conductor...");
+    }
+  });
 
-    viajesActivos.delete(data.pasajero);
-    console.log("🟢 Ambas partes confirmadas (conductor primero). Viaje iniciado.");
-  } else {
-    viajesActivos.set(data.pasajero, {
-      pasajeroConfirmado: true,
-      ...data,
-    });
-    console.log("🕓 Pasajero confirmó. Esperando al conductor...");
-  }
-});
-
-  // === Cancelar confirmación (ambos pueden hacerlo) ===
+  // === Cancelar confirmación ===
   socket.on("cancelar_confirmacion", (data) => {
     console.log("❌ Una de las partes canceló la confirmación:", data);
     viajesActivos.delete(data.pasajero);
@@ -154,21 +150,20 @@ socket.on("conductor_asignado", (data) => {
   });
 
   // === Conductor finaliza el viaje ===
-socket.on("viaje_finalizado", (data) => {
-  console.log("🏁 El conductor marcó el viaje como finalizado:", data);
+  socket.on("viaje_finalizado", (data) => {
+    console.log("🏁 El conductor marcó el viaje como finalizado:", data);
 
-  // Enviar confirmación del fin del viaje a ambos
-  io.emit("viaje_finalizado", {
-    pasajero: data.pasajero,
-    conductor: data.conductor || "desconocido",
-    origen: data.origen || null,
-    destino: data.destino || null,
-    tiempo: data.tiempo || null,
-    costo: data.costo || null,
+    io.emit("viaje_finalizado", {
+      pasajero: data.pasajero,
+      conductor: data.conductor || "desconocido",
+      origen: data.origen || null,
+      destino: data.destino || null,
+      tiempo: data.tiempo || null,
+      costo: data.costo || null,
+    });
+
+    console.log("📢 Evento 'viaje_finalizado' emitido a pasajero y conductor.");
   });
-
-  console.log("📢 Evento 'viaje_finalizado' emitido a pasajero y conductor.");
-});
 
   // === Conductor desconectado ===
   socket.on("disconnect", () => {
@@ -176,19 +171,6 @@ socket.on("viaje_finalizado", (data) => {
     console.log("🔴 Cliente desconectado:", socket.id);
   });
 });
-
-// === Función utilitaria: distancia entre coordenadas (km) ===
-function distancia(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 // === Iniciar servidor ===
 const PORT = process.env.PORT || 4000;
