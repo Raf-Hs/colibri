@@ -96,6 +96,7 @@ io.on("connection", (socket) => {
         pasajero: data.pasajero,
         conductor: data.conductor,
         origen: data.origen,
+        destino: data.destino,
       });
       viajesActivos.delete(data.pasajero);
       console.log("🟢 Ambas partes confirmadas (pasajero primero). Viaje iniciado.");
