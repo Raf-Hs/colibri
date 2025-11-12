@@ -42,13 +42,21 @@ io.on("connection", (socket) => {
     conductoresActivos.set(socket.id, data);
     console.log("🚗 Conductor activo:", data);
   });
-
-  socket.on("buscar_conductor", (viaje) => {
+socket.on("buscar_conductor", (viaje) => {
   console.log("📨 Pasajero solicita viaje:", viaje);
 
+  // Coordenadas del pasajero
   const lat = Number(viaje.origen.lat);
   const lng = Number(viaje.origen.lng);
+  console.log("🧭 Coordenadas pasajero:", lat, lng);
 
+  // Mostrar todos los conductores activos
+  console.log("🚗 Conductores activos registrados:");
+  for (const [id, c] of conductoresActivos.entries()) {
+    console.log(`  → ${c.id}: (${c.lat}, ${c.lng})`);
+  }
+
+  // Filtrar los cercanos
   const cercanos = Array.from(conductoresActivos.values()).filter((c) => {
     const dist = distancia(Number(c.lat), Number(c.lng), lat, lng);
     console.log(`📏 Distancia con ${c.id}: ${dist.toFixed(2)} km`);
