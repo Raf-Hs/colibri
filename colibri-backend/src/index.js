@@ -12,10 +12,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// === Rutas REST ===
 app.get("/", (_, res) => res.send("API Colibrí ✅"));
 app.use("/auth", authRoutes);
 app.use("/trips", tripsRoutes);
-
 app.get("/health", (_, res) => res.json({ status: "ok", time: new Date().toISOString() }));
 
 // === Migraciones Prisma ===
@@ -31,63 +31,95 @@ try {
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// Conductores activos en memoria
+// === Conductores activos en memoria ===
 const conductoresActivos = new Map();
 
+// === Estado temporal de viajes confirmados ===
+const viajesActivos = new Map();
+
+// === Conexión de sockets ===
 io.on("connection", (socket) => {
   console.log("🟢 Nuevo cliente conectado:", socket.id);
 
+  // === Conductor activo ===
   socket.on("conductor_activo", (data) => {
-    // data: { id, nombre, lat, lng }
     conductoresActivos.set(socket.id, data);
     console.log("🚗 Conductor activo:", data);
   });
-socket.on("buscar_conductor", (viaje) => {
-  console.log("📨 Pasajero solicita viaje:", viaje);
 
-  // Coordenadas del pasajero
-  const lat = Number(viaje.origen.lat);
-  const lng = Number(viaje.origen.lng);
-  console.log("🧭 Coordenadas pasajero:", lat, lng);
+  // === Pasajero solicita viaje ===
+  socket.on("buscar_conductor", (viaje) => {
+    console.log("📨 Pasajero solicita viaje:", viaje);
 
-  // Mostrar todos los conductores activos
-  console.log("🚗 Conductores activos registrados:");
-  for (const [id, c] of conductoresActivos.entries()) {
-    console.log(`  → ${c.id}: (${c.lat}, ${c.lng})`);
-  }
+    const lat = Number(viaje.origen.lat);
+    const lng = Number(viaje.origen.lng);
+    console.log("🧭 Coordenadas pasajero:", lat, lng);
 
-  // Filtrar los cercanos
-  const cercanos = Array.from(conductoresActivos.values()).filter((c) => {
-    const dist = distancia(Number(c.lat), Number(c.lng), lat, lng);
-    console.log(`📏 Distancia con ${c.id}: ${dist.toFixed(2)} km`);
-    return dist < 5;
+    // Mostrar todos los conductores activos
+    console.log("🚗 Conductores activos registrados:");
+    for (const [id, c] of conductoresActivos.entries()) {
+      console.log(`  → ${c.id}: (${c.lat}, ${c.lng})`);
+    }
+
+    // Filtrar conductores cercanos (radio de 5 km)
+    const cercanos = Array.from(conductoresActivos.values()).filter((c) => {
+      const dist = distancia(Number(c.lat), Number(c.lng), lat, lng);
+      console.log(`📏 Distancia con ${c.id}: ${dist.toFixed(2)} km`);
+      return dist < 5;
+    });
+
+    console.log("📍 Conductores cercanos detectados:", cercanos.length);
+
+    if (cercanos.length > 0) {
+      io.to(socket.id).emit("ofertas", cercanos);
+      cercanos.forEach((c) => {
+        const conductorSocket = [...conductoresActivos.entries()]
+          .find(([_, val]) => val.id === c.id)?.[0];
+        if (conductorSocket) {
+          console.log(`📤 Enviando viaje al conductor ${c.id}`);
+          io.to(conductorSocket).emit("nuevo_viaje_disponible", viaje);
+        }
+      });
+    } else {
+      console.log("🚫 No hay conductores cercanos al pasajero");
+    }
   });
 
-  console.log("📍 Conductores cercanos detectados:", cercanos.length);
+  // === Conductor acepta viaje ===
+  socket.on("conductor_acepta_viaje", (data) => {
+    console.log("✅ Conductor aceptó el viaje:", data);
+    viajesActivos.set(data.pasajero, { conductor: data.conductor, origen: data.origen });
+    io.emit("viaje_confirmado", data);
+  });
 
-  if (cercanos.length > 0) {
-    io.to(socket.id).emit("ofertas", cercanos);
-    cercanos.forEach((c) => {
-      const conductorSocket = [...conductoresActivos.entries()]
-        .find(([_, val]) => val.id === c.id)?.[0];
-      if (conductorSocket) {
-        console.log(`📤 Enviando viaje al conductor ${c.id}`);
-        io.to(conductorSocket).emit("nuevo_viaje_disponible", viaje);
-      }
-    });
-  } else {
-    console.log("🚫 No hay conductores cercanos al pasajero");
-  }
-});
+  // === Pasajero confirma asignación ===
+  socket.on("conductor_asignado", (data) => {
+    console.log("🚘 Pasajero confirmó al conductor:", data);
+    const viajePrevio = viajesActivos.get(data.pasajero);
 
+    if (viajePrevio) {
+      io.emit("iniciar_recogida", {
+        pasajero: data.pasajero,
+        conductor: viajePrevio.conductor,
+        origen: data.origen,
+      });
+      viajesActivos.delete(data.pasajero);
+      console.log("🟢 Viaje activo iniciado entre pasajero y conductor.");
+    } else {
+      viajesActivos.set(data.pasajero, { pasajeroConfirmado: true, ...data });
+    }
+  });
+
+  // === Conductor desconectado ===
   socket.on("disconnect", () => {
     conductoresActivos.delete(socket.id);
     console.log("🔴 Cliente desconectado:", socket.id);
   });
 });
 
+// === Función utilitaria: distancia entre coordenadas (km) ===
 function distancia(lat1, lon1, lat2, lon2) {
-  const R = 6371; // km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -98,39 +130,8 @@ function distancia(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Estado temporal de viajes confirmados
-const viajesActivos = new Map();
-
-// Cuando el conductor acepta el viaje
-socket.on("conductor_acepta_viaje", (data) => {
-  console.log("✅ Conductor aceptó el viaje:", data);
-  // Guardamos temporalmente el viaje
-  viajesActivos.set(data.pasajero, { conductor: data.conductor, origen: data.origen });
-  // Notificamos al pasajero que el conductor ha confirmado
-  io.emit("viaje_confirmado", data);
-});
-
-// Cuando el pasajero confirma también
-socket.on("conductor_asignado", (data) => {
-  console.log("🚘 Pasajero confirmó al conductor:", data);
-  const viajePrevio = viajesActivos.get(data.pasajero);
-
-  if (viajePrevio) {
-    // Ambas partes confirmaron → comenzar fase de recogida
-    io.emit("iniciar_recogida", {
-      pasajero: data.pasajero,
-      conductor: viajePrevio.conductor,
-      origen: data.origen,
-    });
-    viajesActivos.delete(data.pasajero);
-    console.log("🟢 Viaje activo iniciado entre pasajero y conductor.");
-  } else {
-    // Si aún no está en el mapa, solo marcamos confirmación pasajero
-    viajesActivos.set(data.pasajero, { pasajeroConfirmado: true, ...data });
-  }
-});
-
+// === Iniciar servidor ===
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () =>
-  console.log(`🚀 API + Socket corriendo en http://localhost:${PORT}`)
-);
+server.listen(PORT, () => {
+  console.log(`🚀 API + Socket corriendo en http://localhost:${PORT}`);
+});
