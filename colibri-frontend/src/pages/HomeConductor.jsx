@@ -218,7 +218,7 @@ export default function HomeConductor() {
         <h1 className="home-title">Panel de Conductor</h1>
 
         <section className="map-section">
-          <MapaRutas marcadorConductor={posicionConductor} directions={viaje.directions} />
+          <MapaRutas marcadorConductor={posicionConductor} permitirRutas={false}  directions={viaje.directions} />
         </section>
 
         {/* === Nueva solicitud === */}

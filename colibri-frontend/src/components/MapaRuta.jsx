@@ -13,7 +13,9 @@ export default function MapaRutas({
   onSelect,
   marcadorConductor,
   directions,
-  rutaConductorPasajero, // 🔹 nueva prop
+  rutaConductorPasajero,
+  permitirRutas = true,
+  reset = false, // 🔹 nuevo parámetro para limpiar el mapa
 }) {
   const [map, setMap] = useState(null);
   const [center, setCenter] = useState(fallbackCenter);
@@ -31,8 +33,18 @@ export default function MapaRutas({
           const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           setCenter(loc);
           setOrigin(loc);
-          setOriginText("Mi ubicación actual");
-          onSelect?.({ origen: loc });
+
+          // 🔹 Geocodificar nombre de la calle
+          const geocoder = new window.google.maps.Geocoder();
+          geocoder.geocode({ location: loc }, (results, status) => {
+            if (status === "OK" && results[0]) {
+              setOriginText(results[0].formatted_address);
+              onSelect?.({ origen: loc, origenTexto: results[0].formatted_address });
+            } else {
+              setOriginText("Mi ubicación actual");
+              onSelect?.({ origen: loc });
+            }
+          });
         },
         () => setCenter(fallbackCenter),
         { enableHighAccuracy: true }
@@ -42,30 +54,51 @@ export default function MapaRutas({
 
   // === CLICK EN EL MAPA ===
   const handleClick = (e) => {
+    if (!permitirRutas) return; // 🔹 Bloquea trazado si no se permite
+
     const clicked = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+    const geocoder = new window.google.maps.Geocoder();
 
     if (!origin) {
-      setOrigin(clicked);
-      setOriginText(`${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`);
+      geocoder.geocode({ location: clicked }, (results, status) => {
+        const direccion =
+          status === "OK" && results[0]
+            ? results[0].formatted_address
+            : `${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`;
+        setOrigin(clicked);
+        setOriginText(direccion);
+        onSelect?.({ origen: clicked, origenTexto: direccion });
+      });
       setDestination(null);
       setDirectionsLocal(null);
-      onSelect?.({ origen: clicked });
     } else if (!destination) {
-      setDestination(clicked);
-      setDestinationText(`${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`);
-      onSelect?.({ destino: clicked });
-      calcularRuta(clicked);
+      geocoder.geocode({ location: clicked }, (results, status) => {
+        const direccion =
+          status === "OK" && results[0]
+            ? results[0].formatted_address
+            : `${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`;
+        setDestination(clicked);
+        setDestinationText(direccion);
+        onSelect?.({ destino: clicked, destinoTexto: direccion });
+        calcularRuta(clicked);
+      });
     } else {
-      setOrigin(clicked);
-      setOriginText(`${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`);
-      setDestination(null);
-      setDestinationText("");
-      setDirectionsLocal(null);
-      onSelect?.({ origen: clicked, destino: null });
+      geocoder.geocode({ location: clicked }, (results, status) => {
+        const direccion =
+          status === "OK" && results[0]
+            ? results[0].formatted_address
+            : `${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`;
+        setOrigin(clicked);
+        setOriginText(direccion);
+        setDestination(null);
+        setDestinationText("");
+        setDirectionsLocal(null);
+        onSelect?.({ origen: clicked, origenTexto: direccion });
+      });
     }
   };
 
-  // === CALCULAR RUTA PRINCIPAL ===
+  // === CALCULAR RUTA ===
   const calcularRuta = (dest) => {
     const svc = new window.google.maps.DirectionsService();
     svc.route(
@@ -108,24 +141,37 @@ export default function MapaRutas({
     );
   };
 
-  // === Renderiza la segunda ruta (conductor → pasajero) ===
+  // === RUTA SECUNDARIA: conductor → pasajero ===
   useEffect(() => {
     if (!map || !rutaConductorPasajero) return;
 
-    const rendererSecundario = new window.google.maps.DirectionsRenderer({
+    const renderer = new window.google.maps.DirectionsRenderer({
       map,
       suppressMarkers: true,
       polylineOptions: {
-        strokeColor: "#1E88E5", // azul para distinguir
+        strokeColor: "#1E88E5",
         strokeOpacity: 0.7,
         strokeWeight: 4,
       },
     });
 
-    rendererSecundario.setDirections(rutaConductorPasajero);
+    renderer.setDirections(rutaConductorPasajero);
 
-    return () => rendererSecundario.setMap(null);
+    return () => renderer.setMap(null);
   }, [map, rutaConductorPasajero]);
+
+  // === LIMPIAR MAPA CUANDO SE RESETEE ===
+  useEffect(() => {
+    if (reset) {
+      setOrigin(null);
+      setDestination(null);
+      setDirectionsLocal(null);
+      setOriginText("");
+      setDestinationText("");
+      setCenter(fallbackCenter);
+      if (map) map.panTo(fallbackCenter);
+    }
+  }, [reset, map]);
 
   return (
     <div className="map-wrapper">
@@ -162,16 +208,13 @@ export default function MapaRutas({
             disableDefaultUI: true,
           }}
         >
-          {/* Marcadores de origen y destino (solo si no hay ruta trazada) */}
           {!directions && origin && <Marker position={origin} label="A" />}
           {!directions && destination && <Marker position={destination} label="B" />}
 
-          {/* Ruta principal */}
           {(directions || directionsLocal) && (
             <DirectionsRenderer directions={directions || directionsLocal} />
           )}
 
-          {/* 🔹 Marcador del conductor en movimiento */}
           {marcadorConductor && (
             <Marker
               position={marcadorConductor}
@@ -186,7 +229,6 @@ export default function MapaRutas({
             />
           )}
 
-          {/* 🔵 Marcador del usuario */}
           {origin && (
             <Marker
               position={origin}

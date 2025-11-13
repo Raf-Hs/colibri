@@ -115,7 +115,6 @@ export default function HomePasajero() {
           estado: "viaje_en_progreso",
           progreso: data.progreso || 0,
         }));
-        setMensajeSistema("Tu viaje ha comenzado. ¡Buen camino! 🛣️");
       }
     });
 
@@ -223,10 +222,13 @@ export default function HomePasajero() {
         <section className="map-section">
           <MapaRutas
             onSelect={handleSelect}
+            permitirRutas={true}
             marcadorConductor={posicionConductor}
             directions={viaje.directions}
             rutaConductorPasajero={viaje.rutaConductorPasajero}
-          />
+            reset={viaje.estado === "finalizado"} // Limpia el mapa automáticamente
+            />
+          
         </section>
 
         {/* === Mensaje del sistema === */}
@@ -323,10 +325,34 @@ export default function HomePasajero() {
         )}
 
         {viaje.estado === "finalizado" && (
-          <div className="viaje-actual">
-            <p>🚩 Has llegado a tu destino.</p>
-          </div>
-        )}
+  <div className="viaje-actual">
+    <p>🚩 Has llegado a tu destino.</p>
+    <button
+      className="btn-estado verde"
+      onClick={() => {
+        console.log("🔄 Reiniciando estado del pasajero...");
+        setViaje({
+          origen: null,
+          destino: null,
+          distancia: "",
+          duracion: "",
+          directions: null,
+          estado: "pendiente",
+          conductor: null,
+          rutaConductorPasajero: null,
+          progreso: 0,
+        });
+        setMensajeSistema(null);
+        setOfertas([]);
+        setPosicionConductor(null);
+        setAlertaProximidad(false);
+      }}
+    >
+      Aceptar
+    </button>
+  </div>
+)}
+
       </div>
     </div>
   );
