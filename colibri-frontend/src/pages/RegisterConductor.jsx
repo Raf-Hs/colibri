@@ -9,6 +9,9 @@ export default function RegisterConductor() {
     telefono: "",
     password: "",
   });
+
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+
   const [docs, setDocs] = useState({
     identificacion: null,
     licencia: null,
@@ -18,6 +21,7 @@ export default function RegisterConductor() {
     fotoConductor: null,
     acreditacionTaxi: null,
   });
+
   const [preview, setPreview] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,13 +48,40 @@ export default function RegisterConductor() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!aceptaTerminos) {
+      setError("Debes aceptar los términos y condiciones.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await fetch("https://colibri-backend-od5b.onrender.com/auth/register", {
+      const formData = new FormData();
+
+      formData.append("nombre", form.nombre);
+      formData.append("email", form.email);
+      formData.append("telefono", form.telefono);
+      formData.append("password", form.password);
+      formData.append("rol", "conductor");
+
+      formData.append("identificacion", docs.identificacion);
+      formData.append("licencia", docs.licencia);
+      formData.append("poliza", docs.poliza);
+      formData.append("domicilio", docs.domicilio);
+      formData.append("fotoConductor", docs.fotoConductor);
+
+      if (docs.acreditacionTaxi) {
+        formData.append("acreditacionTaxi", docs.acreditacionTaxi);
+      }
+
+      docs.vehiculoFotos.forEach((file) => {
+        formData.append("vehiculoFotos", file);
+      });
+
+      const res = await fetch("http://localhost:4000/auth/register-conductor", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, rol: "conductor" }),
+        body: formData,
       });
 
       const data = await res.json();
@@ -61,7 +92,7 @@ export default function RegisterConductor() {
         return;
       }
 
-      alert("✅ Registro exitoso. En breve revisaremos tu documentación.");
+      alert("Registro exitoso. En breve revisaremos tu documentación.");
       navigate("/");
     } catch (err) {
       console.error(err);
@@ -85,6 +116,7 @@ export default function RegisterConductor() {
         {error && <div className="register-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="register-form" autoComplete="off">
+          
           <input
             type="text"
             name="nombre"
@@ -126,51 +158,47 @@ export default function RegisterConductor() {
           />
 
           <div className="documentacion-section">
-            <h3 className="documentacion-title">
-              Documentación obligatoria
-            </h3>
+            <h3 className="documentacion-title">Documentación obligatoria</h3>
 
-            <label className="form-label required">
-              Identificación oficial (INE, pasaporte o licencia)
-            </label>
-            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "identificacion")} required />
+            <label className="form-label required">Identificación oficial</label>
+            <input type="file" accept="image/*,application/pdf" required onChange={(e) => handleFile(e, "identificacion")} />
 
-            <label className="form-label required">
-              Licencia de conducir vigente
-            </label>
-            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "licencia")} required />
+            <label className="form-label required">Licencia de conducir vigente</label>
+            <input type="file" accept="image/*,application/pdf" required onChange={(e) => handleFile(e, "licencia")} />
 
-            <label className="form-label required">
-              Póliza de seguro del vehículo
-            </label>
-            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "poliza")} required />
+            <label className="form-label required">Póliza de seguro del vehículo</label>
+            <input type="file" accept="image/*,application/pdf" required onChange={(e) => handleFile(e, "poliza")} />
 
-            <label className="form-label required">
-              Comprobante de domicilio (≤ 3 meses)
-            </label>
-            <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "domicilio")} required />
+            <label className="form-label required">Comprobante de domicilio</label>
+            <input type="file" accept="image/*,application/pdf" required onChange={(e) => handleFile(e, "domicilio")} />
 
-            <label className="form-label required">
-              Fotografías del vehículo (frontal, trasera, lateral e interior)
-            </label>
-            <input type="file" multiple accept="image/*" onChange={(e) => handleFile(e, "vehiculoFotos", true)} required />
+            <label className="form-label required">Fotografías del vehículo</label>
+            <input type="file" multiple accept="image/*" required onChange={(e) => handleFile(e, "vehiculoFotos", true)} />
 
             <div className="preview-grid">
               {preview.vehiculoFotos &&
                 preview.vehiculoFotos.map((src, i) => (
-                  <img key={i} src={src} className="preview-img" alt={`vehiculo-${i}`} />
+                  <img key={i} src={src} className="preview-img" />
                 ))}
             </div>
 
-            <label className="form-label required">
-              Fotografía del conductor
-            </label>
-            <input type="file" accept="image/*" onChange={(e) => handleFile(e, "fotoConductor")} required />
+            <label className="form-label required">Fotografía del conductor</label>
+            <input type="file" accept="image/*" required onChange={(e) => handleFile(e, "fotoConductor")} />
 
-            <label className="form-label">
-              Acreditación municipal o estatal (si aplica)
-            </label>
+            <label className="form-label">Acreditación (opcional)</label>
             <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "acreditacionTaxi")} />
+          </div>
+
+          {/* === CHECKBOX TÉRMINOS === */}
+          <div className="terminos-box">
+            <label className="terminos-label">
+              <input
+                type="checkbox"
+                checked={aceptaTerminos}
+                onChange={(e) => setAceptaTerminos(e.target.checked)}
+              />
+              Acepto los Términos y Condiciones y el uso de mis datos conforme a la Política de Privacidad.
+            </label>
           </div>
 
           <button type="submit" className="register-button" disabled={loading}>

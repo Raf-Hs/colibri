@@ -10,7 +10,7 @@ import Historial from "./pages/Historial";
 import SplashScreen from "./pages/SplashScreen";
 import Sidebar from "./components/Sidebar";
 import "./pages/SplashScreen.css";
-
+import ValidacionPanel from "./pages/ValidadorPanel";
 /* ===== PROTECCIÓN DE RUTAS ===== */
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -41,6 +41,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/register-conductor" element={<RegisterConductor />} />
           <Route path="/verify" element={<Verify2FA />} />
+          <Route path="/validacion" element={<ValidacionPanel />} />
 
           {/* Rutas protegidas */}
           <Route

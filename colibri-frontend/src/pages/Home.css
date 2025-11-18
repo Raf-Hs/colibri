@@ -432,3 +432,32 @@
   font-size: 1.4rem;
   color: #2B9C93;
 }
+/* --- WALLET MINI --- */
+.wallet-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.4rem 0.6rem;
+  width: 130px;          /* tamaño fijo, pequeño */
+  height: 70px;          /* altura mini */
+  margin: 0 auto 1rem;   /* centrado */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 3px solid #2B9C93;
+}
+
+.wallet-monto {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #2B9C93;
+}
+
+.wallet-detalle {
+  font-size: 0.7rem;
+  color: #6c757d;
+  margin-top: 0.15rem;
+}

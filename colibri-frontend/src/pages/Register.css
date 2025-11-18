@@ -202,3 +202,88 @@
     height: 80px;
   }
 }
+/* Texto que indica requisito de identificación */
+.register-label {
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2B9C93;
+  margin-top: 0.5rem;
+}
+
+/* Advertencia específica para identificación vigente */
+.register-id-warning {
+  font-size: 0.85rem;
+  color: #b07600;
+  background: #fff7e6;
+  padding: 0.6rem 0.8rem;
+  border-left: 4px solid #ffcc80;
+  border-radius: 8px;
+  margin: -0.5rem 0 1rem;
+  text-align: left;
+  line-height: 1.3;
+}
+
+/* Input de archivo estilizado */
+.register-input[type="file"] {
+  padding: 0.8rem;
+  background: #ffffff;
+  border: 2px dashed #b2dfdb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.register-input[type="file"]:hover {
+  border-color: #2B9C93;
+  background: #f0fdfa;
+}
+
+.register-input[type="file"]:focus {
+  outline: none;
+  border-color: #2B9C93;
+  box-shadow: 0 0 0 4px rgba(43, 156, 147, 0.15);
+}
+
+/* Texto del nombre del archivo seleccionado */
+.register-file-name {
+  margin-top: 0.3rem;
+  font-size: 0.85rem;
+  color: #495057;
+  text-align: left;
+}
+.terminos-box {
+  margin-top: 1.2rem;
+  margin-bottom: 0.8rem;
+  text-align: left;
+}
+
+.terminos-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #495057;
+  line-height: 1.4;
+}
+
+.terminos-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2B9C93;
+  cursor: pointer;
+}
+
+.terminos-link {
+  color: #2B9C93;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: 0.2s;
+}
+
+.terminos-link:hover {
+  color: #4EC6C0;
+  border-bottom-color: #4EC6C0;
+}

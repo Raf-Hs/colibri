@@ -1,17 +1,29 @@
 ### 🌐 Test Backend Colibrí
 @baseUrl = https://colibri-backend-od5b.onrender.com
 
+
+GET http://localhost:4000/auth/identificacion/5
+
+
+### 👤 Documentos conductor
+
+GET http://localhost:4000/auth/conductor/6/documentos
+
+
 ### 👤 Registro de usuario
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "nombre": "Rafa",
-  "email": "test@colibri.com",
-  "telefono": "123456789",
+  "nombre": "Validador Demo",
+  "email": "validador@colibri.com",
+  "telefono": "4420000000",
   "password": "1234",
-  "rol": "viajero"
+  "rol": "validador"
 }
+
+carlos@colibri.com
+abcd1234
 
 ### 🔑 Login
 POST https://colibri-backend-od5b.onrender.com/auth/login
@@ -22,14 +34,32 @@ Content-Type: application/json
   "password": "1234"
 }
 
+carlos@colibri.com
+abcd1234
 
 ### 🔒 Ruta protegida de prueba (ejemplo con token)
 GET {{baseUrl}}/trips
 Authorization: Bearer {{token}}
 
 ### 👥 Listar usuarios
-GET {{baseUrl}}/auth/users
+GET http://localhost:4000/auth/users
 
 
 ### 🔒 Ruta protegida de prueba (ejemplo con token)
-  GET https://colibri-backend-od5b.onrender.com/health
+GET https://colibri-backend-od5b.onrender.com/health
+
+### 🔒 Ruta protegida de prueba (ejemplo con token)
+### 👮 Registrar validador
+POST http://localhost:4000/auth/register-validador
+Content-Type: application/json
+
+{
+  "nombre": "Validador Oficial",
+  "email": "validador@colibri.com",
+  "telefono": 4427477664,
+  "password": "1234"
+}
+
+### 🔒 Ruta protegida de prueba (ejemplo con token)
+### 👮 Registrar validador
+GET http://localhost:4000/historial/test@colibri.com

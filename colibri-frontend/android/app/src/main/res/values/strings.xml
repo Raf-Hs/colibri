@@ -4,4 +4,5 @@
     <string name="title_activity_main">colibri</string>
     <string name="package_name">com.colibri.app</string>
     <string name="custom_url_scheme">com.colibri.app</string>
+    <string name="google_maps_key">AIzaSyCorV2BJ7jd_A1qmPC9Jl0J9l28QPdxqQU</string>
 </resources>

@@ -19,17 +19,8 @@ export default function Sidebar() {
   // === FUNCIÓN DE CIERRE DE SESIÓN ===
   const cerrarSesion = () => {
     try {
-      // Elimina token, rol, viajes y datos del usuario
-      localStorage.removeItem("token");
-      localStorage.removeItem("rol");
-      localStorage.removeItem("userEmail");
-      localStorage.removeItem("viajesColibri");
-      localStorage.clear();
-
-      // Redirige al login
+      localStorage.clear(); // Borra todo
       navigate("/");
-
-      // Cierra el menú
       setOpen(false);
     } catch (err) {
       console.error("Error al cerrar sesión:", err);
@@ -38,7 +29,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* === BOTÓN HAMBURGUESA === */}
+      {/* === BOTÓN HAMBURGUESA (SOLO VISIBLE SI ESTÁ CERRADO) === */}
       {!open && (
         <button className="menu-btn" onClick={() => setOpen(true)}>
           ☰
@@ -47,24 +38,27 @@ export default function Sidebar() {
 
       {/* === SIDEBAR === */}
       <aside className={`sidebar ${open ? "open" : ""}`}>
+        
+        {/* 1. CABECERA (Perfil) */}
         <div className="sidebar-header">
-          <img 
-            src="/src/assets/Logo.png" 
-            alt="Huitzilin Logo" 
-            className="sidebar-logo-img"
-          />
-          <h2 className="sidebar-logo">
-            <span>Huitzilin</span>
-          </h2>
           <button className="close-btn" onClick={() => setOpen(false)}>
             ✕
           </button>
+          <img 
+            src="https://i.imgur.com/tDiPuet.png" 
+            alt="Huitzilin Logo" 
+            className="sidebar-logo-img"
+          />
+          <h2 className="sidebar-logo">Huitzilin</h2>
+          <p className="sidebar-role">Conductor</p>
         </div>
 
+        {/* 2. NAVEGACIÓN (Solo los links) */}
+        {/* flex: 1 hace que esta sección empuje el footer hacia abajo */}
         <nav className="sidebar-nav">
           <Link
             to="/home"
-            className={location.pathname === "/home" ? "active" : ""}
+            className={`nav-item ${location.pathname === "/home" ? "active" : ""}`}
             onClick={() => setOpen(false)}
           >
             <span className="nav-icon">🏠</span>
@@ -73,22 +67,29 @@ export default function Sidebar() {
 
           <Link
             to="/historial"
-            className={location.pathname === "/historial" ? "active" : ""}
+            className={`nav-item ${location.pathname === "/historial" ? "active" : ""}`}
             onClick={() => setOpen(false)}
           >
             <span className="nav-icon">📋</span>
             Historial
           </Link>
+        </nav>
 
+        {/* 3. FOOTER (Aquí va el botón de salir para que quede abajo) */}
+        <div className="sidebar-footer">
           <button className="logout-btn" onClick={cerrarSesion}>
             <span className="nav-icon">🚪</span>
             Cerrar sesión
           </button>
-        </nav>
+        </div>
+
       </aside>
 
-      {/* === OVERLAY OSCURO === */}
-      {open && <div className="overlay" onClick={() => setOpen(false)} />}
+      {/* === OVERLAY (FONDO OSCURO) === */}
+      <div 
+        className={`overlay ${open ? "visible" : ""}`} 
+        onClick={() => setOpen(false)} 
+      />
     </>
   );
 }

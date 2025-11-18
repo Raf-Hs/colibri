@@ -4,10 +4,11 @@ import cors from "cors";
 import { Server } from "socket.io";
 import http from "http";
 import { execSync } from "child_process";
-
+import historialRoutes from "./routes/historial.js";
 import authRoutes from "./routes/auth.routes.js";
 import tripsRoutes from "./routes/trips.routes.js";
-
+import validacionRoutes from "./routes/validacion.routes.js";
+import walletRoutes from "./routes/wallet.routes.js";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -16,6 +17,9 @@ app.use(express.json());
 app.get("/", (_, res) => res.send("API Colibrí ✅"));
 app.use("/auth", authRoutes);
 app.use("/trips", tripsRoutes);
+app.use("/wallet", walletRoutes);
+app.use("/validacion", validacionRoutes);
+app.use("/historial", historialRoutes);
 app.get("/health", (_, res) =>
   res.json({ status: "ok", time: new Date().toISOString() })
 );
@@ -150,20 +154,29 @@ io.on("connection", (socket) => {
   });
 
   // === Conductor finaliza el viaje ===
-  socket.on("viaje_finalizado", (data) => {
-    console.log("🏁 El conductor marcó el viaje como finalizado:", data);
+  socket.on("viaje_finalizado", async (data) => {
+  console.log("🏁 Viaje finalizado:", data);
 
-    io.emit("viaje_finalizado", {
-      pasajero: data.pasajero,
-      conductor: data.conductor || "desconocido",
-      origen: data.origen || null,
-      destino: data.destino || null,
-      tiempo: data.tiempo || null,
-      costo: data.costo || null,
+  const conductorEmail = data.conductor; 
+  const costo = Number(data.costo) || 0;
+  const comision = costo * 0.15;
+
+  try {
+    await prisma.usuario.update({
+      where: { email: conductorEmail },
+      data: {
+        wallet: { increment: comision }
+      }
     });
 
-    console.log("📢 Evento 'viaje_finalizado' emitido a pasajero y conductor.");
-  });
+    console.log(`💰 Comisión añadida: ${comision} a ${conductorEmail}`);
+  } catch (err) {
+    console.error("⚠️ Error al actualizar wallet:", err);
+  }
+
+  io.emit("viaje_finalizado", data);
+});
+
 
   // === Conductor desconectado ===
   socket.on("disconnect", () => {
@@ -171,6 +184,7 @@ io.on("connection", (socket) => {
     console.log("🔴 Cliente desconectado:", socket.id);
   });
 });
+
 
 // === Iniciar servidor ===
 const PORT = process.env.PORT || 4000;

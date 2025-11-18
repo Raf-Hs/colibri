@@ -11,7 +11,7 @@ function SplashScreen() {
       <div className="splash-content">
         <div className="splash-logo-container">
           <img 
-            src="/src/assets/Logo.png" 
+            src="https://i.imgur.com/tDiPuet.png" 
             alt="Huitzilin Logo" 
             className="splash-logo"
           />

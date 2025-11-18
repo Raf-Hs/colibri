@@ -8,6 +8,18 @@ const socket = io("https://colibri-backend-od5b.onrender.com");
 export default function HomeConductor() {
   const [activo, setActivo] = useState(false);
   const [posicionConductor, setPosicionConductor] = useState(null);
+  const [wallet, setWallet] = useState(0); // WALLET DE COMISIONES
+
+  useEffect(() => {
+  const email = localStorage.getItem("userEmail");
+  if (!email) return;
+
+  fetch(`http://localhost:4000/wallet/${email}`)
+    .then(res => res.json())
+    .then(data => setWallet(data.wallet || 0))
+    .catch(err => console.error("Error wallet:", err));
+}, []);
+
   const [viaje, setViaje] = useState({
     directions: null,
     estado: "pendiente",
@@ -202,13 +214,23 @@ export default function HomeConductor() {
     });
   };
 
+  // === FINALIZAR VIAJE + WALLET ===
   const finalizarViaje = () => {
     console.log("✅ Viaje finalizado correctamente.");
+
+    const costoViaje = solicitud?.costo || 50; // si no manda costo, usa uno base
+    const comision = costoViaje * 0.15;
+
+    setWallet((prev) => prev + comision);
+    console.log("💰 Comisión del viaje:", comision);
+    console.log("💼 Wallet acumulado:", wallet + comision);
+
     setViaje((v) => ({
       directions: null,
       estado: "pendiente",
       progreso: 0,
     }));
+
     setSolicitud(null);
   };
 
@@ -216,6 +238,11 @@ export default function HomeConductor() {
     <div className="home-container">
       <div className="home-box">
         <h1 className="home-title">Panel de Conductor</h1>
+
+<div className="wallet-box">
+  <p className="wallet-monto">${Number(wallet).toFixed(2)}</p>
+  <p className="wallet-detalle">Comisiones pendientes</p>
+</div>
 
         <section className="map-section">
           <MapaRutas marcadorConductor={posicionConductor} permitirRutas={false}  directions={viaje.directions} />

@@ -1,0 +1,164 @@
+.validador-container {
+  display: flex;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+  min-height: 100vh;
+  font-family: "Inter", sans-serif;
+  padding-left: 280px; /* espacio real del sidebar */
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  box-sizing: border-box;
+}
+
+/* === Caja principal tipo home-box === */
+.validador-box {
+  background: white;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(12, 37, 48, 0.12);
+  display: flex;
+  overflow: hidden;
+}
+
+/* === COLUMNA IZQUIERDA === */
+.validador-lista {
+  width: 330px;
+  background: #ffffff;
+  border-right: 1px solid #eaeaea;
+  padding: 1.7rem;
+  box-sizing: border-box;
+}
+
+.validador-lista h2 {
+  color: #2B9C93;
+  font-size: 1.6rem;
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+}
+
+/* === ITEM DE LA LISTA === */
+.validador-item {
+  padding: 1rem;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(43, 156, 147, 0.08);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.validador-item:hover {
+  transform: scale(1.02);
+  border-color: #2B9C93;
+}
+
+.validador-item.selected {
+  background: #f1fff4;
+  border-left: 6px solid #2B9C93;
+}
+
+/* === PANEL DERECHO === */
+.validador-detalle {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  line-height: 1.45;
+}
+
+.validador-detalle h2 {
+  color: #2B9C93;
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.validador-detalle p {
+  font-size: 1rem;
+  color: #495057;
+  margin-bottom: 0.6rem;
+}
+
+/* === DOCUMENTOS === */
+.doc-bloque {
+  margin-bottom: 1.8rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.doc-bloque h4 {
+  color: #2B9C93;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.doc-bloque img {
+  width: 260px;
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 16px rgba(12, 37, 48, 0.12);
+  margin-right: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+/* === BOTONES === */
+.btn-accion {
+  padding: 0.9rem 1.5rem;
+  border-radius: 14px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-aprobar {
+  background: linear-gradient(135deg, #2B9C93 0%, #4EC6C0 100%);
+  color: white;
+  margin-right: 1rem;
+  box-shadow: 0 6px 16px rgba(43, 156, 147, 0.3);
+}
+
+.btn-aprobar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(43, 156, 147, 0.45);
+}
+
+.btn-rechazar {
+  background: linear-gradient(135deg, #FF6B6B 0%, #F48C64 100%);
+  color: white;
+  box-shadow: 0 6px 16px rgba(244, 140, 100, 0.3);
+}
+
+.btn-rechazar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(244, 140, 100, 0.45);
+}
+
+/* Texto vacío */
+.validador-vacio {
+  text-align: center;
+  color: #6c757d;
+  margin-top: 4rem;
+}
+/* Sidebar abierta */
+.validador-container {
+  padding-left: 280px;
+}
+
+/* Sidebar colapsada (cuando Sidebar aplica la clase) */
+.sidebar-collapsed + .validador-container {
+  padding-left: 80px;
+}
+/* Sidebar abierta */
+body:not(.sidebar-collapsed) .validador-container {
+  padding-left: 280px;
+}
+
+/* Sidebar cerrada */
+body.sidebar-collapsed .validador-container {
+  padding-left: 80px;
+}

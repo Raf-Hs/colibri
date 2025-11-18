@@ -24,3 +24,6 @@ android/
 ios/
 *.orig
 .DS_Store
+
+colibri-backend/gcs-key.json
+*.json

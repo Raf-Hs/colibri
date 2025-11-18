@@ -9,6 +9,10 @@ export default function Register() {
     telefono: "",
     password: "",
   });
+
+  const [identificacion, setIdentificacion] = useState(null);
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -17,16 +21,36 @@ export default function Register() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e) => {
+    setIdentificacion(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!aceptaTerminos) {
+      setError("Debes aceptar los términos y condiciones para continuar.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await fetch("https://colibri-backend-od5b.onrender.com/auth/register", {
+      const formData = new FormData();
+      formData.append("nombre", form.nombre);
+      formData.append("email", form.email);
+      formData.append("telefono", form.telefono);
+      formData.append("password", form.password);
+      formData.append("rol", "viajero");
+
+      if (identificacion) {
+        formData.append("identificacion", identificacion);
+      }
+
+      const res = await fetch("http://localhost:4000/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, rol: "viajero" }),
+        body: formData,
       });
 
       const data = await res.json();
@@ -37,7 +61,7 @@ export default function Register() {
         return;
       }
 
-      alert("✅ Registro exitoso. Ya puedes iniciar sesión.");
+      alert("Registro exitoso. Ya puedes iniciar sesión.");
       navigate("/");
     } catch (err) {
       console.error(err);
@@ -63,6 +87,7 @@ export default function Register() {
         {error && <div className="register-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="register-form" autoComplete="off">
+
           <input
             type="text"
             name="nombre"
@@ -102,6 +127,35 @@ export default function Register() {
             required
             className="register-input"
           />
+
+          <label className="register-label">
+            Identificación oficial vigente (INE o pasaporte)
+          </label>
+
+          <div className="register-id-warning">
+            * Debe ser una identificación vigente en formato de imagen
+            (fotografía clara y legible).
+          </div>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            required
+            className="register-input"
+          />
+
+          {/* === Checkbox de Términos === */}
+          <div className="terminos-box">
+            <label className="terminos-label">
+              <input
+                type="checkbox"
+                checked={aceptaTerminos}
+                onChange={(e) => setAceptaTerminos(e.target.checked)}
+              />
+              Acepto los Términos y Condiciones y la Política de Privacidad de Huitzilin.
+            </label>
+          </div>
 
           <button type="submit" className="register-button" disabled={loading}>
             {loading ? "Registrando..." : "Registrarse como Pasajero"}

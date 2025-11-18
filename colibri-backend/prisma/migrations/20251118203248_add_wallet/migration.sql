@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Usuario" ADD COLUMN     "wallet" DOUBLE PRECISION NOT NULL DEFAULT 0;

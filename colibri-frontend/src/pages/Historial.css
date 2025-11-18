@@ -335,3 +335,78 @@
 .estrella.activa {
   color: #F48C64;
 }
+
+.historial-item p,
+.historial-item .calificacion { 
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #343a40;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Aseguramos que el primer elemento (origen) siga viéndose negrita/grande */
+.historial-item p:first-child {
+  margin-top: 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #212529;
+}
+
+.historial-item p:last-child {
+  margin-bottom: 0;
+}
+
+/* Ajuste específico para que las estrellas se alineen bien */
+.calificacion {
+  display: flex;
+  align-items: center; /* Centra verticalmente el texto con las estrellas */
+  gap: 0.5rem;
+}
+
+/* =========================================
+   CORRECCIÓN DE TAMAÑO DE ICONOS
+   ========================================= */
+
+/* Estilos base para todos los iconos SVG */
+.tabler-icon {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Iconos pequeños dentro de la lista */
+.icon-sm {
+  width: 20px;
+  height: 20px;
+  min-width: 20px; /* Importante: evita que el icono se aplaste si el texto es largo */
+  color: #2B9C93;  /* Les damos el color verde azulado de tu tema */
+}
+
+/* Icono grande para cuando la lista está vacía */
+.icon-xl {
+  width: 64px;
+  height: 64px;
+}
+
+/* Corrección específica para las estrellas */
+.estrella .tabler-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor; /* Para que la estrella se rellene de color */
+  stroke: none;       /* Quitamos el borde si es una estrella rellena */
+}
+
+/* Ajuste opcional para el icono de estrella vacía (si usas contorno) */
+.estrella:not(.activa) .tabler-icon {
+  stroke: #FFB38A;
+  fill: none;
+  stroke-width: 2;
+}
+

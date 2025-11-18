@@ -26,10 +26,19 @@ model Usuario {
   email      String    @unique
   telefono   String
   password   String
-  rol        String
+  rol         String @default("viajero")
   secret2FA  String?   // ← necesario para 2FA (puede ser null)
   createdAt  DateTime  @default(now())
   viajes     Viaje[]   @relation("UsuarioViajes")
+  identificacion          String?
+  licencia                String?
+  poliza                  String?
+  domicilio               String?
+  fotoConductor           String?
+  vehiculoFotos           String[]   @default([])
+  acreditacionTaxi        String?
+  estadoValidacion String   @default("pendiente")
+  wallet Float @default(0)
 }
 
 
@@ -45,4 +54,19 @@ model Viaje {
   usuarioId   Int
   usuario     Usuario     @relation("UsuarioViajes", fields: [usuarioId], references: [id])
   createdAt   DateTime    @default(now())
+}
+
+model Historial {
+  id           Int      @id @default(autoincrement())
+  pasajero     String
+  conductor    String
+  origen       Json
+  destino      Json
+  distancia    String
+  duracion     String
+  costo        String
+  estado       String   @default("finalizado")  // ← agregar
+  fecha        DateTime @default(now())
+  origenTexto  String?
+  destinoTexto String?
 }

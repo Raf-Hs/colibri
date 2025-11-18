@@ -5,8 +5,15 @@ export default function Historial() {
   const [viajes, setViajes] = useState([]);
 
   useEffect(() => {
-    const guardados = JSON.parse(localStorage.getItem("viajesColibri")) || [];
-    setViajes(guardados);
+    const email = localStorage.getItem("userEmail");
+
+    fetch(`http://localhost:4000/historial/${email}`)
+      .then(res => res.json())
+      .then(data => {
+        console.log("Historial recibido:", data);
+        setViajes(data);
+      })
+      .catch(err => console.error("Error cargando historial:", err));
   }, []);
 
   const renderEstrellas = (calificacion) => {
@@ -81,13 +88,13 @@ export default function Historial() {
                   </span>
                 </p>
                 {viaje.calificacion && (
-                  <p className="calificacion">
+                  <div className="calificacion">
                     <svg className="tabler-icon icon-sm">
                       <use xlinkHref="#icon-star"></use>
                     </svg>
-                    <strong>Calificación:</strong> 
+                    <strong>Calificación:</strong>
                     {renderEstrellas(viaje.calificacion)}
-                  </p>
+                  </div>
                 )}
                 {viaje.reseña && (
                   <p>

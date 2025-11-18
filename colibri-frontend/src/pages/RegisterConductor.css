@@ -251,4 +251,42 @@ input[type="file"]:focus {
   .preview-img {
     max-width: 80px;
   }
+
+  .terminos-box {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.terminos-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  color: #495057;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.terminos-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2B9C93;
+  cursor: pointer;
+}
+
+.terminos-link {
+  color: #2B9C93;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: 0.2s;
+}
+
+.terminos-link:hover {
+  color: #4EC6C0;
+  border-bottom-color: #4EC6C0;
+}
+
+
 }
