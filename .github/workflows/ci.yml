@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 env:
-  REPO_LOWER: ${{ github.repository }}
+  REPO_LOWER: ${{ raf-hs/colibri }}
 
 jobs:
   build-and-push:
