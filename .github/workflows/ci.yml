@@ -5,11 +5,12 @@ on:
     branches: [ "main" ]
 
 env:
-  REPO_LOWER: ${{ raf-hs/colibri }}
+  REPO_LOWER: "raf-hs/colibri"
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,12 +28,13 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ env.REPO_LOWER }}:latest
-            ghcr.io/${{ env.REPO_LOWER }}:${{ github.sha }}
+            ghcr.io/raf-hs/colibri:latest
+            ghcr.io/raf-hs/colibri:${{ github.sha }}
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+
     steps:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.7
