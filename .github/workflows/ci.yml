@@ -38,16 +38,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+      - name: Crear llave temporal
+        run: |
+          echo "${{ secrets.SSH_RAW_KEY }}" > temp_key
+          chmod 600 temp_key
 
-          script: |
-            export GHCR_PAT="${{ secrets.GHCR_PAT }}"
-            export IMAGE_NAME="ghcr.io/raf-hs/colibri:${{ github.sha }}"
+      - name: Deploy to VPS (nuevo método)
+        run: |
+          ssh -i temp_key -o StrictHostKeyChecking=no \
+          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+          "bash -s" << 'EOF'
+            IMAGE_TAG=${{ github.sha }}
+            IMAGE_NAME="ghcr.io/raf-hs/colibri:$IMAGE_TAG"
 
-            echo "🔵 Ejecutando deploy_blue_green.sh en el VPS..."
+            echo 'Haciendo login a GHCR'
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "Raf-Hs" --password-stdin
+
             /home/deployer/app/deploy_blue_green.sh "$IMAGE_NAME"
+          EOF
