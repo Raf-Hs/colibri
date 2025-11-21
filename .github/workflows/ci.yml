@@ -5,7 +5,7 @@ on:
     branches: ["main"]
 
 env:
-  IMAGE_NAME: ghcr.io/raf-hs/colibri
+  IMAGE_NAME_BASE: ghcr.io/raf-hs/colibri
 
 jobs:
   build-and-push:
@@ -29,8 +29,8 @@ jobs:
           file: ./colibri-backend/Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}:latest
+            ${{ env.IMAGE_NAME_BASE }}:${{ github.sha }}
 
   deploy:
     needs: build-and-push
