@@ -32,23 +32,18 @@ jobs:
             ${{ env.IMAGE_NAME_BASE }}:latest
             ${{ env.IMAGE_NAME_BASE }}:${{ github.sha }}
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
+deploy:
+  needs: build-and-push
+  runs-on: ubuntu-latest
 
-    steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          script: |
-            IMAGE_TAG=${{ github.sha }}
-            IMAGE_NAME="ghcr.io/raf-hs/colibri:${IMAGE_TAG}"
-
-            echo "Haciendo login a GHCR en el VPS..."
-            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-
-            echo "Desplegando imagen: $IMAGE_NAME"
-            /home/deployer/app/deploy_blue_green.sh "$IMAGE_NAME"
+  steps:
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script: |
+          export GHCR_PAT=${{ secrets.GHCR_PAT }}
+          export IMAGE_NAME="ghcr.io/raf-hs/colibri:${{ github.sha }}"
+          /home/deployer/app/deploy_blue_green.sh "$IMAGE_NAME"
