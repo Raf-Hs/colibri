@@ -25,7 +25,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./colibri-backend
+          file: ./colibri-backend/Dockerfile
           push: true
           tags: |
             ghcr.io/raf-hs/colibri:latest
