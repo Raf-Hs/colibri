@@ -1,33 +1,30 @@
-name: Deploy to VPS
+name: Deploy Blue Green
 
 on:
-  workflow_run:
-    workflows: ["Build and Push Docker Images"]
-    types:
-      - completed
+  push:
+    branches: [ "main" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            # Crear carpeta del proyecto si no existe
-            mkdir -p /home/deployer/colibri
-            cd /home/deployer/colibri
+    - name: Checkout
+      uses: actions/checkout@v3
 
-            # Actualizar docker-compose.yml desde el repo si lo tienes en Git
-            if [ ! -f docker-compose.yml ]; then
-              echo "docker-compose.yml no encontrado en VPS"
-            fi
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-            # Descargar las imágenes más recientes
-            docker-compose pull
+    - name: Copy app to GREEN
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "rm -rf /var/www/colibri/colibri-green/*"
 
-            # Reconstruir y reiniciar los contenedores
-            docker-compose up -d --remove-orphans || true
+        scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/colibri/colibri-green/
+
+    - name: Deploy GREEN
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "bash /var/www/colibri/app/deploy.sh green"
