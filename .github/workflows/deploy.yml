@@ -17,14 +17,17 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Copy app to GREEN
+    - name: Clean Green folder
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
           "rm -rf /var/www/colibri/colibri-green/*"
 
-        scp -r ./* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/colibri/colibri-green/
+    - name: Copy repository to GREEN
+      run: |
+        scp -o StrictHostKeyChecking=no -r ./* \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/colibri/colibri-green/
 
     - name: Deploy GREEN
       run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
           "bash /var/www/colibri/app/deploy.sh green"
