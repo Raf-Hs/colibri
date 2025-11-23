@@ -2,41 +2,43 @@ name: deploy
 
 on:
   push:
-    branches:
-      - PROD
+    branches: [ "PROD" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Build frontend
-        run: |
-          cd colibri-frontend
-          npm ci
-          npm run build
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
 
-      - name: Build backend
-        run: |
-          cd colibri-backend
-          npm ci
+    - name: Build backend
+      run: |
+        cd colibri-backend
+        npm install
+        npm run build
 
-      - name: Package build
-        run: |
-          tar -czf deploy.tar.gz colibri-backend colibri-frontend
+    - name: Build frontend
+      run: |
+        cd colibri-frontend
+        npm install
+        npm run build
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Package build
+      run: |
+        tar -czf deploy.tar.gz colibri-backend colibri-frontend/dist
 
-      - name: Upload to VPS
-        run: |
-          scp -o StrictHostKeyChecking=no deploy.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/deployer/app/
+    - name: Upload to VPS
+      run: |
+        scp -o StrictHostKeyChecking=no deploy.tar.gz $SSH_USER@$SSH_HOST:/home/deployer/app/
 
-      - name: Deploy on VPS
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "bash /home/deployer/app/deploy.sh"
+    - name: Deploy on VPS
+      run: |
+        ssh $SSH_USER@$SSH_HOST "cd /home/deployer/app && ./deploy.sh"
