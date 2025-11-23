@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
+    "build": "echo \"backend sin build\"",
     "start": "node src/index.js",
     "prisma:studio": "npx prisma studio"
   },
