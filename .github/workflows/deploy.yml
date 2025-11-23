@@ -1,41 +1,42 @@
-name: Deploy Simple BlueGreen
+name: deploy
 
 on:
   push:
-    branches: ["PROD"]
+    branches:
+      - PROD
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Build backend
-      run: |
-        cd colibri-backend
-        npm install
+      - name: Build frontend
+        run: |
+          cd colibri-frontend
+          npm ci
+          npm run build
 
-    - name: Build frontend
-      run: |
-        cd colibri-frontend
-        npm install
-        npm run build
+      - name: Build backend
+        run: |
+          cd colibri-backend
+          npm ci
 
-    - name: Package build
-      run: |
-        tar -czf deploy.tar.gz colibri-backend colibri-frontend/dist
+      - name: Package build
+        run: |
+          tar -czf deploy.tar.gz colibri-backend colibri-frontend
 
-    - name: Upload to VPS
-      run: |
-        scp -o StrictHostKeyChecking=no deploy.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/colibri/colibri-green/
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Extract on VPS
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-        "cd /var/www/colibri/colibri-green && rm -rf colibri-backend colibri-frontend && tar -xzf deploy.tar.gz && rm deploy.tar.gz"
+      - name: Upload to VPS
+        run: |
+          scp -o StrictHostKeyChecking=no deploy.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/deployer/app/
 
-    - name: Switch to GREEN and restart
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-        "bash /var/www/colibri/app/deploy.sh green"
+      - name: Deploy on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "bash /home/deployer/app/deploy.sh"
