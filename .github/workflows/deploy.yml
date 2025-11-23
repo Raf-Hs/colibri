@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     env:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SSH_USER: ${{ secrets.SSH_USER }}
@@ -46,4 +46,5 @@ jobs:
 
     - name: Deploy on VPS
       run: |
-        ssh $SSH_USER@$SSH_HOST "cd /home/deployer/app && ./deploy.sh"
+        ssh $SSH_USER@$SSH_HOST "sudo /var/www/colibri/deploy_blue_green.sh"
+
