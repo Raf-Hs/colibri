@@ -2,7 +2,8 @@ name: Deploy Blue Green
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "PROD" ]
+
 
 jobs:
   deploy:
