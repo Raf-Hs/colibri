@@ -1,9 +1,11 @@
 {
-  "appId": "com.colibri.huitzilin",
-  "appName": "colibri",
+  "appId": "com.huitzilin.app",
+  "appName": "Huitzilin",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
+    "cleartext": true,
+    "url": "https://colibri-frontend.vercel.app",
     "androidScheme": "https"
   },
   "plugins": {

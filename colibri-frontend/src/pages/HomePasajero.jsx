@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 import MapaRutas from "../components/MapaRuta";
 import "./Home.css";
 
-const socket = io("http://localhost:4000");
+const socket = io("https://colibri-backend-od5b.onrender.com");
 const UMBRAL_METROS = 40;
 
 // === SIMULADOR DE REVIEWS ===
@@ -143,7 +143,7 @@ export default function HomePasajero() {
       if (data.pasajero !== localStorage.getItem("userEmail")) return;
 
       try {
-        const res = await fetch("http://localhost:4000/historial/guardar", {
+        const res = await fetch("https://colibri-backend-od5b.onrender.com/historial/guardar", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -294,7 +294,7 @@ export default function HomePasajero() {
       const autor = localStorage.getItem("userEmail");
       const destino = viaje.conductor?.email;
 
-      await fetch("http://localhost:4000/reviews/crear", {
+      await fetch("https://colibri-backend-od5b.onrender.com/reviews/crear", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

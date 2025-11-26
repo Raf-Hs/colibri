@@ -50,7 +50,7 @@ export default function Register() {
         formData.append("identificacion", identificacion);
       }
 
-      const res = await fetch("http://localhost:4000/auth/register", {
+      const res = await fetch("https://colibri-backend-od5b.onrender.com/auth/register", {
         method: "POST",
         body: formData,
       });

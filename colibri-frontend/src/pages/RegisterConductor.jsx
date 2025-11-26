@@ -81,7 +81,7 @@ export default function RegisterConductor() {
         formData.append("vehiculoFotos", file);
       });
 
-      const res = await fetch("http://localhost:4000/auth/register-conductor", {
+      const res = await fetch("https://colibri-backend-od5b.onrender.com/auth/register-conductor", {
         method: "POST",
         body: formData,
       });

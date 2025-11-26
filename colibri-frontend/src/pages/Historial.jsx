@@ -7,7 +7,7 @@ export default function Historial() {
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
 
-    fetch(`http://localhost:4000/historial/${email}`)
+    fetch(`https://colibri-backend-od5b.onrender.com/historial/${email}`)
       .then(res => res.json())
       .then(data => {
         console.log("Historial recibido:", data);

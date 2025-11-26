@@ -11,7 +11,7 @@ export default function ValidadorPanel() {
   ============================ */
   const cargarLista = async () => {
     try {
-      const res = await fetch("http://localhost:4000/validacion/pendientes", {
+      const res = await fetch("https://colibri-backend-od5b.onrender.com/validacion/pendientes", {
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
         },
@@ -55,7 +55,7 @@ export default function ValidadorPanel() {
   const aprobar = async () => {
     try {
       await fetch(
-        `http://localhost:4000/validacion/aprobar/${seleccionado}`,
+        `https://colibri-backend-od5b.onrender.com/validacion/aprobar/${seleccionado}`,
         {
           method: "POST",
           headers: {
@@ -77,7 +77,7 @@ export default function ValidadorPanel() {
   const rechazar = async () => {
     try {
       await fetch(
-        `http://localhost:4000/validacion/rechazar/${seleccionado}`,
+        `https://colibri-backend-od5b.onrender.com/validacion/rechazar/${seleccionado}`,
         {
           method: "POST",
           headers: {

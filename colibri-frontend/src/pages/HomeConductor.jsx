@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 import MapaRutas from "../components/MapaRuta";
 import "./Home.css";
 
-const socket = io("http://localhost:4000");
+const socket = io("https://colibri-backend-od5b.onrender.com");
 const UMBRAL_METROS = 30;
 
 // === SIMULADOR DE REVIEWS PASAJERO ===
@@ -86,7 +86,7 @@ export default function HomeConductor() {
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
     if (!email) return;
-    fetch(`http://localhost:4000/wallet/${email}`)
+    fetch(`https://colibri-backend-od5b.onrender.com/wallet/${email}`)
       .then(r => r.json())
       .then(d => setWallet(d.balance || 0));
   }, []);
@@ -451,7 +451,7 @@ const iniciarSimDestino = () => {
 
     setWallet(prev => prev + pago);
     fetch(
-      `http://localhost:4000/wallet/sumar/${localStorage.getItem("userEmail")}`,
+      `https://colibri-backend-od5b.onrender.com/wallet/sumar/${localStorage.getItem("userEmail")}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -478,7 +478,7 @@ const iniciarSimDestino = () => {
     setWallet(prev => prev + comision);
 
     fetch(
-      `http://localhost:4000/wallet/sumar/${localStorage.getItem("userEmail")}`,
+      `https://colibri-backend-od5b.onrender.com/wallet/sumar/${localStorage.getItem("userEmail")}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
