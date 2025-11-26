@@ -5,7 +5,7 @@
   "bundledWebRuntime": false,
   "server": {
     "cleartext": true,
-    "url": "https://colibri-frontend.vercel.app",
+    "url": "https://colibri-frontend.vercel.app/",
     "androidScheme": "https"
   },
   "plugins": {
