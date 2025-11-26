@@ -1,0 +1,58 @@
+name: Build and Deploy Blue/Green
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  IMAGE_NAME: ghcr.io/raf-hs/colibri
+
+jobs:
+
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build & Push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./colibri-backend
+          file: ./colibri-backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Crear llave temporal
+        run: |
+          echo "${{ secrets.SSH_RAW_KEY }}" > temp_key
+          chmod 600 temp_key
+
+      - name: Deploy to VPS (nuevo método)
+        run: |
+          ssh -i temp_key -o StrictHostKeyChecking=no \
+          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+          "bash -s" << 'EOF'
+            IMAGE_TAG=${{ github.sha }}
+            IMAGE_NAME="ghcr.io/raf-hs/colibri:$IMAGE_TAG"
+
+            echo 'Haciendo login a GHCR'
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "Raf-Hs" --password-stdin
+
+            /home/deployer/app/deploy_blue_green.sh "$IMAGE_NAME"
+          EOF
