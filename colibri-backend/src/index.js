@@ -4,27 +4,33 @@ import cors from "cors";
 import { Server } from "socket.io";
 import http from "http";
 import { execSync } from "child_process";
+
 import historialRoutes from "./routes/historial.js";
 import authRoutes from "./routes/auth.routes.js";
 import tripsRoutes from "./routes/trips.routes.js";
 import validacionRoutes from "./routes/validacion.routes.js";
 import walletRoutes from "./routes/wallet.routes.js";
+import reviewsRoutes from "./routes/reviews.routes.js";
+import { prisma } from "./db.js";
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// === Rutas REST ===
+// Rutas REST
 app.get("/", (_, res) => res.send("API Colibrí ✅"));
 app.use("/auth", authRoutes);
 app.use("/trips", tripsRoutes);
 app.use("/wallet", walletRoutes);
 app.use("/validacion", validacionRoutes);
 app.use("/historial", historialRoutes);
+app.use("/reviews", reviewsRoutes);
+
 app.get("/health", (_, res) =>
   res.json({ status: "ok", time: new Date().toISOString() })
 );
 
-// === Migraciones Prisma ===
+// Migraciones Prisma
 try {
   console.log("🏗️ Ejecutando migraciones de Prisma...");
   execSync("npx prisma migrate deploy", { stdio: "inherit" });
@@ -33,67 +39,96 @@ try {
   console.error("⚠️ Error al aplicar migraciones:", err.message);
 }
 
-// === HTTP + Socket.IO ===
+// HTTP + Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// === Conductores activos en memoria ===
-const conductoresActivos = new Map();
+// MAPAS EN MEMORIA
+const conductoresActivos = new Map();   // socketId → info conductor
+const viajesActivos = new Map();        // pasajero → estado del viaje
 
-// === Estado temporal de viajes confirmados ===
-const viajesActivos = new Map();
-
-// === Conexión de sockets ===
+// =========================================================
+//              SOCKET.IO PRINCIPAL
+// =========================================================
 io.on("connection", (socket) => {
-  console.log("🟢 Nuevo cliente conectado:", socket.id);
+  console.log("🟢 Cliente conectado:", socket.id);
 
-  // === Conductor activo ===
+  // ======================================================
+  // 🟦 1. CONDUCTOR ACTIVO
+  // ======================================================
   socket.on("conductor_activo", (data) => {
-    conductoresActivos.set(socket.id, data);
-    console.log("🚗 Conductor activo:", data);
+    conductoresActivos.set(socket.id, {
+      socketId: socket.id,
+      email: data.email,
+      nombre: data.nombre,
+      lat: data.lat,
+      lng: data.lng,
+      capacidad: data.capacidad || 4,
+      sexo: data.sexo || "hombre",
+    });
+
+    console.log("🚗 Conductor activo:", conductoresActivos.get(socket.id));
   });
 
-  // === Pasajero solicita viaje ===
+  // ======================================================
+  // 🟨 2. PASAJERO SOLICITA VIAJE
+  // ======================================================
   socket.on("buscar_conductor", (viaje) => {
-    console.log("📨 Pasajero solicita viaje:", viaje);
+    console.log("📨 Solicitud de viaje:", viaje);
 
-    console.log("🚗 Conductores activos registrados:");
-    for (const [id, c] of conductoresActivos.entries()) {
-      console.log(`  → ${c.id}: (${c.lat}, ${c.lng})`);
-    }
+    const lista = Array.from(conductoresActivos.entries());
 
-    const todos = Array.from(conductoresActivos.entries());
+    // capacidad
+    const filtrados = lista.filter(([_, c]) => c.capacidad >= viaje.pasajeros);
 
-    if (todos.length === 0) {
-      console.log("🚫 No hay conductores activos actualmente.");
+    // sexo
+    let filtradosSexo = filtrados;
+    if (viaje.preferenciaSexo === "mujer")
+      filtradosSexo = filtrados.filter(([_, c]) => c.sexo === "mujer");
+
+    if (viaje.preferenciaSexo === "hombre")
+      filtradosSexo = filtrados.filter(([_, c]) => c.sexo === "hombre");
+
+    if (filtradosSexo.length === 0) {
       io.to(socket.id).emit("sin_conductores", {
-        mensaje: "No hay conductores disponibles por ahora.",
+        mensaje: "No hay conductores disponibles según tu preferencia",
       });
-    } else {
-      console.log("📢 Enviando solicitud de viaje a todos los conductores activos...");
-      todos.forEach(([id, info]) => {
-        console.log(`📤 Enviando viaje al conductor ${info.id}`);
-        io.to(id).emit("nuevo_viaje_disponible", viaje);
-      });
-
-      io.to(socket.id).emit(
-        "ofertas",
-        todos.map(([_, c]) => ({
-          id: c.id,
-          nombre: c.nombre,
-          lat: c.lat,
-          lng: c.lng,
-        }))
-      );
+      return;
     }
+
+    // notificar a los conductores filtrados
+    filtradosSexo.forEach(([idSocket, info]) => {
+      io.to(idSocket).emit("nuevo_viaje_disponible", viaje);
+    });
+
+    io.to(socket.id).emit(
+      "ofertas",
+      filtradosSexo.map(([_, c]) => ({
+        id: c.email,
+        nombre: c.nombre,
+        email: c.email,
+        lat: c.lat,
+        lng: c.lng,
+      }))
+    );
   });
 
-  // === Conductor acepta viaje ===
+  // ======================================================
+  // 🟩 3. CONDUCTOR ACEPTA
+  // ======================================================
   socket.on("conductor_acepta_viaje", (data) => {
-    console.log("✅ Conductor aceptó el viaje:", data);
     const previo = viajesActivos.get(data.pasajero);
 
-    if (previo && previo.pasajeroConfirmado) {
+    // guardar relación pasajero → conductor
+    viajesActivos.set(data.pasajero, {
+      ...previo,
+      conductorConfirmado: true,
+      conductor: data.conductor,
+      origen: data.origen,
+      destino: data.destino,
+    });
+
+    if (previo?.pasajeroConfirmado) {
       const payload = {
         pasajero: data.pasajero,
         conductor: data.conductor,
@@ -103,27 +138,28 @@ io.on("connection", (socket) => {
       };
 
       io.emit("iniciar_recogida", payload);
-      io.emit("viaje_en_progreso", payload);
-
       viajesActivos.delete(data.pasajero);
-      console.log("🟢 Ambas partes confirmadas (pasajero primero). Viaje iniciado.");
     } else {
-      viajesActivos.set(data.pasajero, {
-        conductor: data.conductor,
-        origen: data.origen,
-        conductorConfirmado: true,
-      });
       io.emit("viaje_confirmado", data);
-      console.log("🕓 Conductor confirmó. Esperando al pasajero...");
     }
   });
 
-  // === Pasajero confirma asignación ===
+  // ======================================================
+  // 🟧 4. PASAJERO CONFIRMA
+  // ======================================================
   socket.on("conductor_asignado", (data) => {
-    console.log("🚘 Pasajero confirmó al conductor:", data);
     const previo = viajesActivos.get(data.pasajero);
 
-    if (previo && previo.conductorConfirmado) {
+    viajesActivos.set(data.pasajero, {
+      ...previo,
+      pasajeroConfirmado: true,
+      pasajero: data.pasajero,
+      origen: data.origen,
+      destino: data.destino,
+      conductor: previo?.conductor || data.conductor,
+    });
+
+    if (previo?.conductorConfirmado) {
       const payload = {
         pasajero: data.pasajero,
         conductor: previo.conductor,
@@ -133,60 +169,107 @@ io.on("connection", (socket) => {
       };
 
       io.emit("iniciar_recogida", payload);
-      io.emit("viaje_en_progreso", payload);
-
       viajesActivos.delete(data.pasajero);
-      console.log("🟢 Ambas partes confirmadas (conductor primero). Viaje iniciado.");
-    } else {
-      viajesActivos.set(data.pasajero, {
-        pasajeroConfirmado: true,
-        ...data,
-      });
-      console.log("🕓 Pasajero confirmó. Esperando al conductor...");
     }
   });
 
-  // === Cancelar confirmación ===
+  // ======================================================
+  // ❌ 5. CANCELAR CONFIRMACIÓN
+  // ======================================================
   socket.on("cancelar_confirmacion", (data) => {
-    console.log("❌ Una de las partes canceló la confirmación:", data);
     viajesActivos.delete(data.pasajero);
     io.emit("viaje_cancelado", data);
   });
 
-  // === Conductor finaliza el viaje ===
+  // ======================================================
+  // 🏁 6. VIAJE FINALIZADO
+  // ======================================================
   socket.on("viaje_finalizado", async (data) => {
-  console.log("🏁 Viaje finalizado:", data);
+    const conductorEmail = data.conductor;
+    const costo = Number(data.costo) || 0;
+    const comision = costo * 0.15;
 
-  const conductorEmail = data.conductor; 
-  const costo = Number(data.costo) || 0;
-  const comision = costo * 0.15;
+    try {
+      await prisma.usuario.update({
+        where: { email: conductorEmail },
+        data: { wallet: { increment: comision } },
+      });
 
-  try {
-    await prisma.usuario.update({
-      where: { email: conductorEmail },
-      data: {
-        wallet: { increment: comision }
-      }
-    });
+      console.log(`💰 Comisión añadida: ${comision}`);
+    } catch (err) {
+      console.error("⚠️ Error wallet:", err);
+    }
 
-    console.log(`💰 Comisión añadida: ${comision} a ${conductorEmail}`);
-  } catch (err) {
-    console.error("⚠️ Error al actualizar wallet:", err);
+    io.emit("viaje_finalizado", data);
+  });
+
+  // ======================================================
+  // 📍 7. POSICIÓN DEL CONDUCTOR (GPS REAL)
+  // ======================================================
+  socket.on("posicion_conductor", (data) => {
+  const { pasajero, lat, lng, progreso } = data;
+
+  let pasajeroSocketId = null;
+  for (const [id, s] of io.sockets.sockets) {
+    if (s.handshake.auth?.email === pasajero) {
+      pasajeroSocketId = id;
+      break;
+    }
   }
 
-  io.emit("viaje_finalizado", data);
+  if (!pasajeroSocketId) return;
+
+  io.to(pasajeroSocketId).emit("posicion_conductor", {
+    lat,
+    lng,
+    // si viene definido desde el conductor, se reenvía;
+    // si no, simplemente no se usa en el pasajero
+    progreso,
+  });
 });
 
+  // ======================================================
+  // 🚨 8. BOTÓN DE EMERGENCIA
+  // ======================================================
+  socket.on("pasajero_emergencia", (data) => {
+    const { pasajero, conductor } = data;
 
-  // === Conductor desconectado ===
+    let conductorSocketId = null;
+    for (const [id, info] of conductoresActivos.entries()) {
+      if (info.email === conductor) {
+        conductorSocketId = id;
+        break;
+      }
+    }
+
+    if (conductorSocketId) {
+      io.to(conductorSocketId).emit("alerta_emergencia", {
+        mensaje: "El pasajero reportó una emergencia",
+        pasajero,
+      });
+      io.to(conductorSocketId).emit("viaje_cancelado_emergencia");
+    }
+
+    io.to(socket.id).emit("alerta_emergencia", {
+      mensaje: "Emergencia enviada. Viaje cancelado",
+      pasajero,
+    });
+
+    io.to(socket.id).emit("viaje_cancelado_emergencia");
+  });
+
+  // ======================================================
+  // 🔴 9. DESCONECTADO
+  // ======================================================
   socket.on("disconnect", () => {
     conductoresActivos.delete(socket.id);
     console.log("🔴 Cliente desconectado:", socket.id);
   });
 });
 
-
-// === Iniciar servidor ===
+// =========================================================
+// INICIAR SERVIDOR
+// =========================================================
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`🚀 API + Socket corriendo en http://localhost:${PORT}`);

@@ -82,7 +82,8 @@ router.post("/login", async (req, res) => {
       token,
       rol: user.rol, // 🔹 Enviamos también el rol del usuario
       nombre: user.nombre,
-      email: user.email
+      email: user.email,
+      sexo: user.sexo   // ⚡ AGREGADO
     });
   } catch (e) {
     console.error(e);
