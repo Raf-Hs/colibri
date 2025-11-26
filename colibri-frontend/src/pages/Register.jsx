@@ -8,6 +8,7 @@ export default function Register() {
     email: "",
     telefono: "",
     password: "",
+    sexo: "", // ← agregado
   });
 
   const [identificacion, setIdentificacion] = useState(null);
@@ -42,6 +43,7 @@ export default function Register() {
       formData.append("email", form.email);
       formData.append("telefono", form.telefono);
       formData.append("password", form.password);
+      formData.append("sexo", form.sexo); // ← agregado
       formData.append("rol", "viajero");
 
       if (identificacion) {
@@ -128,6 +130,21 @@ export default function Register() {
             className="register-input"
           />
 
+          {/* === NUEVO CAMPO SEXO === */}
+          <select
+            name="sexo"
+            value={form.sexo}
+            onChange={handleChange}
+            required
+            className="register-input"
+          >
+            <option value="">Selecciona tu sexo</option>
+            <option value="hombre">Hombre</option>
+            <option value="mujer">Mujer</option>
+            <option value="otro">Otro</option>
+          </select>
+          {/* ====================== */}
+
           <label className="register-label">
             Identificación oficial vigente (INE o pasaporte)
           </label>
@@ -145,7 +162,6 @@ export default function Register() {
             className="register-input"
           />
 
-          {/* === Checkbox de Términos === */}
           <div className="terminos-box">
             <label className="terminos-label">
               <input

@@ -1,9 +1,12 @@
+/* =====================================================================================
+   CONTENEDOR PRINCIPAL
+===================================================================================== */
 .validador-container {
   display: flex;
   background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
   min-height: 100vh;
   font-family: "Inter", sans-serif;
-  padding-left: 280px; /* espacio real del sidebar */
+  padding-left: 280px; /* espacio del sidebar */
   padding-top: 2rem;
   padding-bottom: 2rem;
   box-sizing: border-box;
@@ -21,7 +24,9 @@
   overflow: hidden;
 }
 
-/* === COLUMNA IZQUIERDA === */
+/* =====================================================================================
+   COLUMNA IZQUIERDA
+===================================================================================== */
 .validador-lista {
   width: 330px;
   background: #ffffff;
@@ -61,7 +66,9 @@
   border-left: 6px solid #2B9C93;
 }
 
-/* === PANEL DERECHO === */
+/* =====================================================================================
+   PANEL DERECHO
+===================================================================================== */
 .validador-detalle {
   flex: 1;
   padding: 2rem;
@@ -104,7 +111,9 @@
   margin-bottom: 0.6rem;
 }
 
-/* === BOTONES === */
+/* =====================================================================================
+   BOTONES
+===================================================================================== */
 .btn-accion {
   padding: 0.9rem 1.5rem;
   border-radius: 14px;
@@ -138,21 +147,16 @@
   box-shadow: 0 8px 22px rgba(244, 140, 100, 0.45);
 }
 
-/* Texto vacío */
 .validador-vacio {
   text-align: center;
   color: #6c757d;
   margin-top: 4rem;
 }
-/* Sidebar abierta */
-.validador-container {
-  padding-left: 280px;
-}
 
-/* Sidebar colapsada (cuando Sidebar aplica la clase) */
-.sidebar-collapsed + .validador-container {
-  padding-left: 80px;
-}
+/* =====================================================================================
+   SIDEBAR
+===================================================================================== */
+
 /* Sidebar abierta */
 body:not(.sidebar-collapsed) .validador-container {
   padding-left: 280px;
@@ -161,4 +165,67 @@ body:not(.sidebar-collapsed) .validador-container {
 /* Sidebar cerrada */
 body.sidebar-collapsed .validador-container {
   padding-left: 80px;
+}
+
+/* =====================================================================================
+   📱 RESPONSIVE: Celulares y tablets
+===================================================================================== */
+@media (max-width: 768px) {
+
+  /* 🔥 Sobrescribe el padding del sidebar */
+  body:not(.sidebar-collapsed) .validador-container,
+  body.sidebar-collapsed .validador-container {
+    padding-left: 0 !important;
+  }
+
+  .validador-container {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .validador-box {
+    flex-direction: column;
+    border-radius: 16px;
+  }
+
+  .validador-lista {
+    width: 100%;
+    padding: 1rem;
+    border-right: none;
+    border-bottom: 1px solid #eaeaea;
+  }
+
+  .validador-detalle {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .doc-bloque img {
+    width: 100%;
+    max-width: 350px;
+    margin-right: 0;
+  }
+
+  .btn-accion {
+    width: 100%;
+    margin-bottom: 0.7rem;
+  }
+}
+
+/* =====================================================================================
+   📱 iPhone mini / pantallas MUY pequeñas
+===================================================================================== */
+@media (max-width: 480px) {
+  .validador-lista h2,
+  .validador-detalle h2 {
+    font-size: 1.3rem;
+  }
+
+  .validador-item {
+    padding: 0.7rem;
+  }
+
+  .validador-item * {
+  color: #2b2b2b !important;
+}
 }

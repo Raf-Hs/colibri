@@ -1,76 +1,89 @@
+/* ============================================================
+   BASE GENERAL
+============================================================ */
+:root {
+  --color-main: #2B9C93;
+  --color-main-light: #4EC6C0;
+  --color-gray: #495057;
+  --color-gray-light: #6c757d;
+  --color-bg: #f5f7fa;
+  --color-bg-2: #e8f5e9;
+  --radius: 12px;
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 6px 20px rgba(43, 156, 147, 0.15);
+  --shadow-strong: 0 8px 32px rgba(12, 37, 48, 0.12);
+}
+
+/* ============================================================
+   CONTENEDORES
+============================================================ */
 .home-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+  background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-2) 100%);
   min-height: 100vh;
-  font-family: "Inter", sans-serif;
   padding: 1rem;
+  font-family: "Inter", sans-serif;
 }
 
 .home-box {
   width: 100%;
   max-width: 550px;
   background: white;
-  padding: 2rem;
+  padding: 1.2rem;
   border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(12, 37, 48, 0.12);
+  box-shadow: var(--shadow-strong);
   box-sizing: border-box;
   overflow: hidden;
 }
 
 .home-title {
   text-align: center;
-  color: #2B9C93;
+  color: var(--color-main);
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.8rem;
 }
 
+/* ============================================================
+   MAPA
+============================================================ */
 .map-section {
-  background: #ffffff;
+  background: #fff;
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: 0.6rem;
+  margin-bottom: 0.6rem;
   border: 1px solid #eaeaea;
+  box-shadow: var(--shadow-soft);
 }
 
 .map-wrapper {
   margin: 0;
   padding: 0;
   background: transparent;
-  border: none;
-  box-shadow: none;
 }
 
 .inputs-mapa {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  margin-bottom: 0.8rem;
+  gap: 0.5rem;
 }
 
 .map-input {
   width: 100%;
-  padding: 0.8rem 1rem;
+  padding: 0.55rem 0.7rem;
   border: 1.8px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 0.95rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   background: white;
-  color: #495057;
-  transition: all 0.2s ease;
+  transition: 0.2s;
+  color: var(--color-gray);
 }
 
 .map-input:focus {
-  border-color: #2B9C93;
-  background: white;
+  border-color: var(--color-main);
   box-shadow: 0 0 0 2px rgba(43, 156, 147, 0.15);
-  color: #212529;
-}
-
-.map-input::placeholder {
-  color: #adb5bd;
 }
 
 .map-container {
@@ -89,375 +102,291 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: white;
   border: none;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  color: #2B9C93;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  color: var(--color-main);
   display: flex;
-  align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 1.2rem;
+  align-items: center;
 }
 
-.gps-fab:hover {
-  transform: scale(1.05);
-  background: #2B9C93;
-  color: white;
-}
-
+/* ============================================================
+   INFO MINI
+============================================================ */
 .trip-miniinfo {
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 1rem;
   background: #f8fdf9;
   border-radius: 10px;
-  padding: 0.8rem 1rem;
-  margin: 0.6rem auto 1rem;
+  padding: 0.45rem 0.6rem;
+  margin: 0.5rem auto 0.8rem;
   font-size: 0.85rem;
-  color: #495057;
-  width: fit-content;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.trip-miniinfo p {
-  margin: 0;
-  font-weight: 500;
-}
-
-.trip-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.2rem 1.5rem;
-  box-shadow: 0 8px 24px rgba(43, 156, 147, 0.12);
-  margin-top: 1rem;
-  animation: fadeIn 0.4s ease-out;
-}
-
-.trip-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
-}
-
-.trip-info,
-.trip-locs {
-  font-size: 0.95rem;
-  color: #495057;
-}
-
-.trip-cost {
-  text-align: center;
-  margin-top: 0.6rem;
-}
-
-.trip-price {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #2B9C93;
-}
-
-.trip-label {
-  font-size: 0.9rem;
-  color: #6c757d;
-}
-
+/* ============================================================
+   BOTONES GENERALES
+============================================================ */
 .home-button {
-  background: linear-gradient(135deg, #2B9C93 0%, #4EC6C0 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-main) 0%, var(--color-main-light) 100%);
   border: none;
-  padding: 1rem;
+  color: white;
+  padding: 0.8rem;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 700;
-  font-size: 1.1rem;
   width: 100%;
-  transition: all 0.3s ease;
+  font-weight: 700;
+  font-size: 1rem;
   box-shadow: 0 4px 12px rgba(43, 156, 147, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  transition: 0.2s;
 }
 
-.home-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(43, 156, 147, 0.4);
+.btn-estado.verde {
+  background: linear-gradient(135deg, var(--color-main) 0%, var(--color-main-light) 100%);
+  border: none;
+  padding: 0.75rem;
+  color: white;
+  border-radius: 10px;
+  font-weight: 700;
 }
 
+.btn-estado.rojo {
+  background: linear-gradient(135deg, #FF6B6B, #F48C64);
+  border: none;
+  padding: 0.75rem;
+  color: white;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   TARJETAS DE OFERTAS
+============================================================ */
+.oferta-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1rem 1.3rem;
+  box-shadow: var(--shadow-medium);
+  border-left: 5px solid var(--color-main);
+  animation: fadeIn 0.3s ease-in-out;
+  margin-top: 1rem;
+}
+
+.oferta-card h3 {
+  font-size: 1.1rem;
+  color: var(--color-main);
+  margin-bottom: 0.4rem;
+}
+
+.oferta-card p {
+  margin: 0.2rem 0;
+  color: var(--color-gray);
+  font-size: 0.9rem;
+}
+
+.review-mini-box {
+  margin: 0.3rem 0;
+}
+
+.review-mini {
+  color: var(--color-gray-light);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* ============================================================
+   SELECTORES (PASAJERO + CONDUCTOR)
+============================================================ */
+.selector-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.selector-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.selector-item label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-main);
+}
+
+.selector-item input,
+.selector-item select {
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  font-size: 0.85rem;
+  background: #fff;
+}
+
+.selector-item.tiny {
+  flex: 0.25;
+}
+
+.input-capacidad {
+  width: 55px;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+/* ============================================================
+   WALLET MINI
+============================================================ */
+.wallet-mini-card {
+  width: 95px;
+  height: 48px;
+  background: #fff;
+  border-left: 4px solid var(--color-main);
+  border-radius: 12px;
+  padding: 0.3rem 0.4rem;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.10);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.wallet-mini-amount {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-main);
+}
+
+.wallet-mini-label {
+  font-size: 0.63rem;
+  color: var(--color-gray-light);
+}
+
+/* ============================================================
+   VIAJE ACTUAL
+============================================================ */
 .viaje-actual {
   background: #f1fff4;
   border-radius: 12px;
   padding: 1rem;
   text-align: center;
+  color: var(--color-main);
   font-weight: 500;
-  color: #2B9C93;
   box-shadow: 0 4px 10px rgba(43, 156, 147, 0.15);
 }
 
-.viaje-actual.finalizado {
-  background: #e9f7ef;
-  color: #2B9C93;
-}
-
-.btn-estado.verde {
-  background: linear-gradient(135deg, #2B9C93 0%, #4EC6C0 100%);
-  border: none;
-  color: white;
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  margin-top: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-estado.verde:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(43, 156, 147, 0.4);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.ofertas-lista.compacta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
-}
-
-.oferta-card.compacta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8fdf9;
-  border-radius: 10px;
-  padding: 0.8rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  font-size: 0.9rem;
-}
-
-.oferta-info h3 {
-  margin: 0;
-  font-size: 0.95rem;
-  color: #212529;
-}
-
-.oferta-info p {
-  margin: 0.1rem 0;
-  color: #495057;
-  font-size: 0.85rem;
-}
-
-.oferta-timer {
-  font-size: 0.8rem;
-  color: #6c757d;
-}
-
-.oferta-precio {
-  text-align: right;
-  min-width: 80px;
-}
-
-.oferta-precio span {
-  display: block;
-  font-weight: 700;
-  font-size: 1rem;
-  color: #2B9C93;
-  margin-bottom: 0.3rem;
-}
-
-.buscando-titulo {
-  text-align: center;
-  font-weight: 600;
-  color: #2B9C93;
-}
-
-.buscando-texto {
-  text-align: center;
-  color: #6c757d;
-  margin-top: 0.5rem;
-}
-
-.estrellas {
-  display: flex;
-  justify-content: center;
-  gap: 0.3rem;
-  margin: 0.5rem 0;
-}
-
+/* ============================================================
+   PROGRESO
+============================================================ */
 .progreso-barra {
   width: 100%;
   height: 8px;
   background: #e9ecef;
   border-radius: 4px;
-  margin: 0.8rem 0;
-  overflow: hidden;
+  margin-top: 0.7rem;
 }
 
 .progreso-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2B9C93, #4EC6C0);
+  background: linear-gradient(90deg, var(--color-main), var(--color-main-light));
   border-radius: 4px;
-  transition: width 0.4s ease;
 }
 
-.oferta-info .auto {
-  color: #6c757d;
-  font-size: 0.85rem;
-  margin-top: 0.1rem;
-}
-
-.reseña-input {
-  width: 100%;
-  min-height: 80px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 0.8rem 1rem;
-  font-size: 0.95rem;
-  resize: none;
-  margin: 0.8rem 0 1rem;
-  background: white;
-  color: #495057;
-  transition: all 0.3s ease;
-}
-
-.reseña-input:focus {
-  outline: none;
-  border-color: #2B9C93;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(43, 156, 147, 0.1);
-  color: #212529;
-}
-
-.estrellas span {
-  cursor: pointer;
-  transition: transform 0.15s ease;
-  color: #FFB38A;
-  font-size: 2rem;
-}
-
-.estrellas span:hover {
-  transform: scale(1.2);
-}
-
-.estrellas span.activa {
-  color: #F48C64;
-}
-
-.ubicacion-actual {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  color: #495057;
-  border-left: 3px solid #2B9C93;
-}
-
-/* Tarjeta de solicitud para conductor */
-.oferta-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 1.2rem 1.5rem;
-  box-shadow: 0 6px 20px rgba(43, 156, 147, 0.15);
-  margin-top: 1rem;
-  animation: fadeIn 0.3s ease-in-out;
-  border-left: 5px solid #2B9C93;
-  transition: transform 0.2s ease;
-}
-
-.oferta-card:hover {
-  transform: translateY(-3px);
-}
-
-.oferta-card h3 {
-  font-size: 1.1rem;
-  color: #2B9C93;
-  margin-bottom: 0.5rem;
-  font-weight: 700;
-}
-
-.oferta-card p {
-  font-size: 0.9rem;
-  color: #495057;
-  margin: 0.25rem 0;
-}
-
-.oferta-card strong {
-  color: #2B9C93;
-  font-weight: 600;
-}
-
-.oferta-precio {
+/* ============================================================
+   MODAL REVIEW
+============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
   display: flex;
-  justify-content: flex-end;
-  gap: 0.6rem;
-  margin-top: 0.8rem;
-}
-
-.btn-estado.rojo {
-  background: linear-gradient(135deg, #FF6B6B 0%, #F48C64 100%);
-  border: none;
-  color: white;
-  padding: 0.7rem 1rem;
-  border-radius: 10px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-estado.rojo:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(244, 140, 100, 0.4);
-}
-
-.oferta-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.6rem;
-}
-
-.oferta-header .icono {
-  font-size: 1.4rem;
-  color: #2B9C93;
-}
-/* --- WALLET MINI --- */
-.wallet-box {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 0.4rem 0.6rem;
-  width: 130px;          /* tamaño fijo, pequeño */
-  height: 70px;          /* altura mini */
-  margin: 0 auto 1rem;   /* centrado */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  border-left: 3px solid #2B9C93;
+  z-index: 2000;
 }
 
-.wallet-monto {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0;
-  color: #2B9C93;
+.modal {
+  background: white;
+  padding: 1.4rem;
+  border-radius: 14px;
+  width: 85%;
+  max-width: 350px;
+  box-shadow: var(--shadow-medium);
 }
 
-.wallet-detalle {
-  font-size: 0.7rem;
-  color: #6c757d;
-  margin-top: 0.15rem;
+/* ============================================================
+   BOTÓN DE PÁNICO
+============================================================ */
+.fab-panic {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 42px !important;
+  height: 42px !important;
+  font-size: 0.95rem !important;
+  background: linear-gradient(135deg, #FF6B6B, #F48C64);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.selector-row.full {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.selector-item.tiny {
+  flex: 0.32;
+  display: flex;
+  flex-direction: column;
+}
+
+.selector-item.tiny label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-main);
+  margin-bottom: 0.1rem;
+}
+
+.selector-item.tiny input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-main);
+}
+
+.mini-input {
+  padding: 0.3rem 0.45rem;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  background: #fff;
+}
+
+
+.inputs-mapa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem; /* ya existe */
+}
+
+.map-container {
+  margin-top: 0.55rem; /* este es el nuevo espacio */
+}
+
+/* ============================================================
+   ANIMACIONES
+============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

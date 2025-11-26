@@ -27,25 +27,27 @@ export default function ValidadorPanel() {
   /* ============================
      Cargar detalle del conductor
   ============================ */
-  const cargarDetalle = async (id) => {
-    try {
-      setSeleccionado(id);
+ const cargarDetalle = async (id) => {
+  const found = lista.find(x => x.id === id);
+  if (!found) return;
 
-      const res = await fetch(
-        `http://localhost:4000/validacion/conductor/${id}/documentos`,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
-      );
+  setSeleccionado(id);
 
-      const data = await res.json();
-      setDetalle(data);
-    } catch (err) {
-      console.error("Error cargando detalle:", err);
+  setDetalle({
+    nombre: found.nombre,
+    email: found.email,
+    documentos: {
+      Identificación: found.identificacion,
+      Licencia: found.licencia,
+      Póliza: found.poliza,
+      ComprobanteDomicilio: found.domicilio,
+      FotoConductor: found.fotoConductor,
+      Vehículo: found.vehiculoFotos,
+      AcreditaciónTaxi: found.acreditacionTaxi
     }
-  };
+  });
+};
+
 
   /* ============================
      Aprobar conductor

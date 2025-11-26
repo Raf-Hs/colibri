@@ -8,6 +8,7 @@ export default function RegisterConductor() {
     email: "",
     telefono: "",
     password: "",
+    sexo: "", // ← agregado
   });
 
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
@@ -63,6 +64,7 @@ export default function RegisterConductor() {
       formData.append("email", form.email);
       formData.append("telefono", form.telefono);
       formData.append("password", form.password);
+      formData.append("sexo", form.sexo); // ← agregado
       formData.append("rol", "conductor");
 
       formData.append("identificacion", docs.identificacion);
@@ -157,6 +159,21 @@ export default function RegisterConductor() {
             className="register-input"
           />
 
+          {/* === CAMPO SEXO === */}
+          <select
+            name="sexo"
+            value={form.sexo}
+            onChange={handleChange}
+            required
+            className="register-input"
+          >
+            <option value="">Selecciona tu sexo</option>
+            <option value="hombre">Hombre</option>
+            <option value="mujer">Mujer</option>
+            <option value="otro">Otro</option>
+          </select>
+          {/* =================== */}
+
           <div className="documentacion-section">
             <h3 className="documentacion-title">Documentación obligatoria</h3>
 
@@ -189,7 +206,6 @@ export default function RegisterConductor() {
             <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFile(e, "acreditacionTaxi")} />
           </div>
 
-          {/* === CHECKBOX TÉRMINOS === */}
           <div className="terminos-box">
             <label className="terminos-label">
               <input
