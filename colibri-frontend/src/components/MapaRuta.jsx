@@ -9,13 +9,37 @@ const containerStyle = {
 
 const fallbackCenter = { lat: 21.3589, lng: -99.6733 };
 
+// 🔹 Anti-spam geocoder lock
+let geocodeLock = false;
+
+async function geocodeOnce(location) {
+  if (geocodeLock) return null; // No repetir
+  geocodeLock = true;
+
+  const geocoder = new window.google.maps.Geocoder();
+  return new Promise((resolve) => {
+    geocoder.geocode({ location }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        resolve(results[0].formatted_address);
+      } else {
+        resolve(null);
+      }
+
+      // Cooldown ultra corto
+      setTimeout(() => {
+        geocodeLock = false;
+      }, 300); // 300ms → imposible spamear la API
+    });
+  });
+}
+
 export default function MapaRutas({
   onSelect,
   marcadorConductor,
   directions,
   rutaConductorPasajero,
   permitirRutas = true,
-  reset = false, // 🔹 nuevo parámetro para limpiar el mapa
+  reset = false,
 }) {
   const [map, setMap] = useState(null);
   const [center, setCenter] = useState(fallbackCenter);
@@ -25,7 +49,7 @@ export default function MapaRutas({
   const [originText, setOriginText] = useState("");
   const [destinationText, setDestinationText] = useState("");
 
-  // === UBICACIÓN INICIAL ===
+  // === UBICACIÓN INICIAL SIN GEOCODING ===
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -33,69 +57,52 @@ export default function MapaRutas({
           const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           setCenter(loc);
           setOrigin(loc);
-
-          // 🔹 Geocodificar nombre de la calle
-          const geocoder = new window.google.maps.Geocoder();
-          geocoder.geocode({ location: loc }, (results, status) => {
-            if (status === "OK" && results[0]) {
-              setOriginText(results[0].formatted_address);
-              onSelect?.({ origen: loc, origenTexto: results[0].formatted_address });
-            } else {
-              setOriginText("Mi ubicación actual");
-              onSelect?.({ origen: loc });
-            }
-          });
+          setOriginText("Mi ubicación actual");
+          onSelect?.({ origen: loc });
         },
         () => setCenter(fallbackCenter),
         { enableHighAccuracy: true }
       );
     }
-  }, [onSelect]);
+  }, []); // Solo 1 vez
 
-  // === CLICK EN EL MAPA ===
-  const handleClick = (e) => {
-    if (!permitirRutas) return; // 🔹 Bloquea trazado si no se permite
+  // === CLICK EN EL MAPA (ÚNICO LUGAR donde se usa Geocoder) ===
+  const handleClick = async (e) => {
+    if (!permitirRutas) return;
 
     const clicked = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-    const geocoder = new window.google.maps.Geocoder();
 
+    // Geocoding seguro, con anti-spam
+    const direccion =
+      (await geocodeOnce(clicked)) ||
+      `${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`;
+
+    // Primera selección: origen
     if (!origin) {
-      geocoder.geocode({ location: clicked }, (results, status) => {
-        const direccion =
-          status === "OK" && results[0]
-            ? results[0].formatted_address
-            : `${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`;
-        setOrigin(clicked);
-        setOriginText(direccion);
-        onSelect?.({ origen: clicked, origenTexto: direccion });
-      });
+      setOrigin(clicked);
+      setOriginText(direccion);
       setDestination(null);
       setDirectionsLocal(null);
-    } else if (!destination) {
-      geocoder.geocode({ location: clicked }, (results, status) => {
-        const direccion =
-          status === "OK" && results[0]
-            ? results[0].formatted_address
-            : `${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`;
-        setDestination(clicked);
-        setDestinationText(direccion);
-        onSelect?.({ destino: clicked, destinoTexto: direccion });
-        calcularRuta(clicked);
-      });
-    } else {
-      geocoder.geocode({ location: clicked }, (results, status) => {
-        const direccion =
-          status === "OK" && results[0]
-            ? results[0].formatted_address
-            : `${clicked.lat.toFixed(6)}, ${clicked.lng.toFixed(6)}`;
-        setOrigin(clicked);
-        setOriginText(direccion);
-        setDestination(null);
-        setDestinationText("");
-        setDirectionsLocal(null);
-        onSelect?.({ origen: clicked, origenTexto: direccion });
-      });
+      onSelect?.({ origen: clicked, origenTexto: direccion });
+      return;
     }
+
+    // Segunda selección: destino
+    if (!destination) {
+      setDestination(clicked);
+      setDestinationText(direccion);
+      calcularRuta(clicked);
+      onSelect?.({ destino: clicked, destinoTexto: direccion });
+      return;
+    }
+
+    // Si ya había origen y destino → reiniciar origen
+    setOrigin(clicked);
+    setOriginText(direccion);
+    setDestination(null);
+    setDestinationText("");
+    setDirectionsLocal(null);
+    onSelect?.({ origen: clicked, origenTexto: direccion });
   };
 
   // === CALCULAR RUTA ===
@@ -117,27 +124,8 @@ export default function MapaRutas({
             duracion: leg.duration.text,
           });
           if (map && res.routes[0].bounds) map.fitBounds(res.routes[0].bounds);
-        } else {
-          console.error("Error al calcular la ruta:", status);
         }
       }
-    );
-  };
-
-  // === UBICACIÓN ACTUAL ===
-  const usarMiUbicacion = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setCenter(loc);
-        setOrigin(loc);
-        setOriginText("Mi ubicación actual");
-        if (map) map.panTo(loc);
-        onSelect?.({ origen: loc });
-      },
-      (e) => console.warn("GPS error:", e),
-      { enableHighAccuracy: true }
     );
   };
 
@@ -160,7 +148,7 @@ export default function MapaRutas({
     return () => renderer.setMap(null);
   }, [map, rutaConductorPasajero]);
 
-  // === LIMPIAR MAPA CUANDO SE RESETEE ===
+  // === RESET DEL MAPA ===
   useEffect(() => {
     if (reset) {
       setOrigin(null);
@@ -172,6 +160,24 @@ export default function MapaRutas({
       if (map) map.panTo(fallbackCenter);
     }
   }, [reset, map]);
+
+  // === GPS FAB (sin geocoding) ===
+  const usarMiUbicacion = () => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCenter(loc);
+        setOrigin(loc);
+        setOriginText("Mi ubicación actual");
+        onSelect?.({ origen: loc });
+        if (map) map.panTo(loc);
+      },
+      (e) => console.warn("GPS error:", e),
+      { enableHighAccuracy: true }
+    );
+  };
 
   return (
     <div className="map-wrapper">
